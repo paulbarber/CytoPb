@@ -22,6 +22,13 @@ library(ggplot2)
 # REMEMBER TO SET WORKING DIRECTORY
 setwd("D:/Images/IMC/Shahram_BoneMarrow_Apr2022")
 
+# User check of working directory.
+print("Working in:")
+print(getwd())
+print("Enter 'y' to proceed:")
+proceed = readLines(n=1)
+stopifnot(proceed == "y")
+
 # image and panel file locations
 image_location <- "all_data/img"
 panel_location <- "all_data/panel.csv"
