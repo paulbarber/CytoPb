@@ -131,7 +131,7 @@ for (i in 1: length(first_in_pair)){
     com_t = 2^(com_n / com_d)
     
     # try to make sure peak is well contained in the scale limits used
-    critical_value = sig$overlap_gradient[i] / 3;
+    critical_value = sig$overlap_gradient[ii] / 3;
     bgn <- sig$overlap_gradient[1]
     end <- sig$overlap_gradient[length(sig$overlap_gradient)]
     # make sure no NaN values reach the if statement, which will throw an error
@@ -146,7 +146,7 @@ for (i in 1: length(first_in_pair)){
     }  
     
     Image <- c(Image, img)
-    Cell_Type_Pair <- c(Cell_Type_Pair, paste(ct1, "_", ct2))
+    Cell_Type_Pair <- c(Cell_Type_Pair, ct_names)
     Peak_Scale_t <- c(Peak_Scale_t, t)
     Peak_Scale_sigma <- c(Peak_Scale_sigma, sqrt(t))
     COM_Scale_t <- c(COM_Scale_t, com_t)
