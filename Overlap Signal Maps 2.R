@@ -9,6 +9,12 @@
 # output: scaled and map images to channel_png
 # Save the complete workspace for follow on scripts.
 
+# User check of working directory.
+print("Working in:")
+print(getwd())
+print("Enter 'y' to proceed:")
+proceed = readLines(n=1)
+stopifnot(proceed == "y")
 
 # Read previous session
 #load("Overlap Signal Maps.RData")
