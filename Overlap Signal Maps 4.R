@@ -15,6 +15,13 @@
 # Make a plot of the scale space characteristic distances
 # output: Colocalisation Scale.pdf
 
+# User check of working directory.
+print("Working in:")
+print(getwd())
+print("Enter 'y' to proceed:")
+proceed = readLines(n=1)
+stopifnot(proceed == "y")
+
 # Where to look for all the cell type maps
 in_folder <- "celltype_tif"
 out_folder <- "colocalisation_output"
