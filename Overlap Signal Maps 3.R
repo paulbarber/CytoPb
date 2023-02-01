@@ -170,7 +170,7 @@ names(data) <- c("Image", "CellType",
                  "Total", "Density", 
                  "Total_over_0.5", "Density_over_0.5", "Area_over_0.5")
 
-write.csv(data, file = "CellTypeTotals.csv")
+write.csv(data, file = "CellTypeTotals.csv", row.names = F)
 
 
 
