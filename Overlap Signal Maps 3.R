@@ -7,6 +7,13 @@
 # Plot bar charts from data about how abundant each cell type is i neach image
 # output: Cell Total Plots.pdf
 
+# User check of working directory.
+print("Working in:")
+print(getwd())
+print("Enter 'y' to proceed:")
+proceed = readLines(n=1)
+stopifnot(proceed == "y")
+
 # Read previous session
 #load("Overlap Signal Maps.RData")
 
