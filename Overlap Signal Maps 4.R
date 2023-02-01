@@ -175,7 +175,8 @@ write.csv(data, file = "Colocalisation Table.csv", row.names = F)
 data <- read.csv(file = "Colocalisation Table.csv")
 
 pdf("Colocalisation Scale.pdf")
-print(ggplot(data, aes(x = Image, y = COM_Scale_sigma, fill = Cell_Type_Pair)) +
+d <- subset(data, Range_Error == 0)
+print(ggplot(d, aes(x = Image, y = COM_Scale_sigma, fill = Cell_Type_Pair)) +
   geom_bar(stat="identity", position=position_dodge()) +
   coord_flip())
 dev.off()
