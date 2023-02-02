@@ -96,6 +96,8 @@ for(j in 1:length(channels_needed)){
     # Store these probability maps for later use, in order as channels_needed
     # (would be good if we could set dimnames of the EBImage to the channel names.
     # dimnames only supports 3 names. See dimnames(l))
+    # UPDATE and TODO: dimnames holds 3 vectors of names, one for each dimension
+    # So channel names go in the 3rd vector
     l <- get(image_name)
     l <- combine(l, i_p1)
     assign(image_name, l)
