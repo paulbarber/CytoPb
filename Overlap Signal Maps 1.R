@@ -20,7 +20,7 @@ library(cytomapper)
 library(ggplot2)
 
 # REMEMBER TO SET WORKING DIRECTORY
-setwd("D:/Images/IMC/Shahram_BoneMarrow_Apr2022")
+#setwd("...")
 
 # User check of working directory.
 print("Working in:")
@@ -30,11 +30,18 @@ proceed = readLines(n=1)
 stopifnot(proceed == "y")
 
 # image and panel file locations
-image_location <- "all_data/img"
-panel_location <- "all_data/panel.csv"
+image_location <- "img"
+panel_location <- "panel.csv"
+
+# read in channel names
+panel <- read.csv(panel_location)
+panel_keep <- subset(panel, keep == 1)
+panel_keep$image_number <- 1:dim(panel_keep)[1]
+panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
 # Channels needed for identification
-channels_needed <- c("CD3", "CD4", "CD8", "CD19", "CD25", "FOXP3", "CD34", "CD31", "CD45")
+#channels_needed <- c("CD3", "CD4", "CD8", "CD19", "CD25", "FOXP3", "CD34", "CD31", "CD45")
+channels_needed <- panel_keep$name
 
 # folder to save channel QC images to
 folder <- "channel_png"
@@ -76,12 +83,6 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   # return
   c(negv, posv)
 }
-
-# read in channel names
-panel <- read.csv(panel_location)
-panel_keep <- subset(panel, keep == 1)
-panel_keep$image_number <- 1:dim(panel_keep)[1]
-panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
 # Set the scale of the blurring in pixels
 sigma = 5
