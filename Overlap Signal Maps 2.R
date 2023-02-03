@@ -58,18 +58,20 @@ for(j in 1:length(channels_needed)){
     i_p1 <- images@listData[[i]][,,channel]
 
     # Get scaling parameters, ## log10 these to apply to log10 then gblured data
-    table_name <- image_name
-    table_name <- gsub(" ", ".", table_name)   # to match table col
-    table_name <- gsub("-", ".", table_name)   # to match table col
+    table_name <- make.names(image_name)   # to match table col
     nv1 <- neg_table[which(neg_table$Channel == channel), table_name]
     pv1 <- pos_table[which(pos_table$Channel == channel), table_name]
-
+    pv1a = pv1 # for display
+    
     # Check these values, if nv is NA set to 0, if pv is NA set to large number (>65k for 16 bit IMC)
     if(is.na(nv1)) nv1 = 0
-    if(is.na(pv1)) pv1 = 100000
+    if(is.na(pv1)) {
+      pv1 = 100000
+      pv1a = 2 # for display
+    }
 
-    # scale 0-1, mainly for display
-    i_p1a <- (i_p1 - nv1)/(pv1 - nv1)
+    # scale 0-1, only for display
+    i_p1a <- (i_p1 - nv1)/(pv1a - nv1)
 
     # Threshold/clamp to get an estimate of the probability of being positive.
     i_p1a[i_p1a<0] <- 0
