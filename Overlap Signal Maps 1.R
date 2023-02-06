@@ -1,8 +1,11 @@
 # Overlap Signal Maps: Script 1
 # P R Barber, Jan 2023
 
-# Takes in the multi-channel tif images and the panel.csv file.
-# Define channels_needed here.
+# Takes in the multi-channel tiff images and the panel.csv file.
+# The tiff is expected to just have the "keep" channels
+# The panel.csv is expected to have "ALL" the channels. 
+#   Columns "channel" "name" "keep"
+# Can define channels_needed here to reduce processing later.
 # Estimates the foreground of each image.
 # Save image to channel_png folder
 # Save convinient tables of channels with image numbers.
@@ -21,6 +24,9 @@ library(ggplot2)
 
 # REMEMBER TO SET WORKING DIRECTORY
 #setwd("...")
+
+# Set the scale of the blurring in pixels, usually 5 pixels (5 um)
+sigma = 5
 
 # User check of working directory.
 print("Working in:")
@@ -47,8 +53,53 @@ panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number
 folder <- "channel_png"
 dir.create(folder, showWarnings = F)
 
-# Identify negative and positive channel values in ImageJ
+sink(file = "Channel Lists.txt")
+print(paste("All channel names in order are:"))
+print(panel_keep)
+print(paste("Channels needed for cell identification are:"))
+print(panel_needed)
+sink(file = NULL)
 
+# load images
+images <- loadImages(image_location)
+
+
+# Account for different ways things may have been stored
+# Check number of channels in all images
+nChannels <- vector()
+for(i in 1:length(images)){
+  c <- dim(images[i]@listData[[1]])[3]
+  nChannels <- c(nChannels, c)
+}
+nChannels <- unique(nChannels)
+stopifnot(length(nChannels)==1)
+
+# Check number of rows in panel.csv
+nRows <- dim(panel)[1]
+nKeep <- dim(panel_keep)[1]
+
+# If more entries in the keep panel than the images
+# or if more entries in the images than the keep panel
+if(nKeep > nChannels){
+  stop("There are not enough channels in the images for those in the keep column of panel.csv.")
+} else if(nKeep < nChannels){
+  # All image channels must be identified in the panel
+  if(nRows != nChannels){
+    stop("Image channels are not all or uniquely identified in the panel.csv file.")
+  }
+  
+  # extract the image channels that we need
+  for(i in 1:length(images)){
+    images[i]@listData[[1]] <- images[i]@listData[[1]][,,which(panel$keep==1)]
+  }
+
+}
+# Otherwise the number of image channels must be the keep channels
+
+
+channelNames(images) <- panel_keep$name
+
+# Identify negative and positive channel values
 estimateNegPosValue <- function(image, channel, sigma = 10){
   
   # image is a Cytoimagelist
@@ -83,20 +134,6 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   # return
   c(negv, posv)
 }
-
-# Set the scale of the blurring in pixels
-sigma = 5
-
-sink(file = "Channel Lists.txt")
-print(paste("All channel names in order are:"))
-print(panel_keep)
-print(paste("Channels needed for cell identification are:"))
-print(panel_needed)
-sink(file = NULL)
-
-# load images
-images <- loadImages(image_location)
-channelNames(images) <- panel_keep$name
 
 # estimate the negative and positive values for every channel (in panel_keep) of every image
 # write to csv file to check/store, in Excel
