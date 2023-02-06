@@ -37,11 +37,11 @@ panel_location <- "panel.csv"
 panel <- read.csv(panel_location)
 panel_keep <- subset(panel, keep == 1)
 panel_keep$image_number <- 1:dim(panel_keep)[1]
-panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
 # Channels needed for identification
 #channels_needed <- c("CD3", "CD4", "CD8", "CD19", "CD25", "FOXP3", "CD34", "CD31", "CD45")
 channels_needed <- panel_keep$name
+panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
 # folder to save channel QC images to
 folder <- "channel_png"
