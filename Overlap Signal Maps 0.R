@@ -66,18 +66,19 @@ filename <- "panel.csv"
 write.csv(panel, filename, row.names = F)
 
 # Check and save any others that are not the same
-all_the_same = TRUE
-for(i in 2:length(raw)){
-    p <- get(paste0("panel", i))
-    if(!identical(p, panel)){
-      filename <- paste0("panel_", names(raw)[i], ".csv")
-      write.csv(p, filename, row.names = F)
-      all_the_same = FALSE
-    }
+if(length(raw) > 1){
+  all_the_same = TRUE
+  for(i in 2:length(raw)){
+      p <- get(paste0("panel", i))
+      if(!identical(p, panel)){
+        filename <- paste0("panel_", names(raw)[i], ".csv")
+        write.csv(p, filename, row.names = F)
+        all_the_same = FALSE
+      }
+  }
+  
+  if(!all_the_same){
+    warning("The raw image files do not all have the same panel.")
+  }
 }
-
-if(!all_the_same){
-  warning("The raw image files do not all have the same panel.")
-}
-
 
