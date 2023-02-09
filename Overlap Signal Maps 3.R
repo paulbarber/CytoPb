@@ -59,6 +59,11 @@ total_over_0.5 <- vector()
 density_over_0.5 <- vector()
 area_over_0.5 <- vector()
 
+# Create some names in the environment for the EBImage stacks of probability maps
+for(i in 1:length(images)){
+  assign(paste0(names(images)[i], "_ct"), NULL)
+}
+
 addToGlobalArrays <- function(ct_name, image_name, scores){
   ct_names <<- c(ct_names, ct_name)
   image_names <<- c(image_names, image_name)
@@ -109,10 +114,47 @@ for(i in 1:length(images)){
     scores <- process_os(os, image_name, ct_name)
 
     addToGlobalArrays(ct_name, image_name, scores)
-
+    
+    ct <- get(paste0(names(images)[i], "_ct"))
+    ct <- combine(ct, os)
+    assign(paste0(names(images)[i], "_ct"), ct)
+    
   }
 }
+close(pb)
 
+# set dim names for collections of cell type maps
+for(i in 1:length(images)){
+  ct <- get(paste0(names(images)[i], "_ct"))
+  dimnames(ct)[[3]] <- names(ct_matrix)
+  assign(paste0(names(images)[i], "_ct"), ct)
+}
+
+# Set a colour pallette
+# the #000000 black will be used for unclassified image, remove it when using it for bar plots
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# Make images of most likely cell type per pixel
+pb = txtProgressBar(min = 0, max = length(images), initial = 0)
+for(i in 1:length(images)){
+  ct <- get(paste0(names(images)[i], "_ct"))
+  image_name <- names(images)[i]
+  setTxtProgressBar(pb,i)
+  
+  which_ct = apply(ct, c(1,2), which.max)  # which kind of cell is the max
+  max_ct = apply(ct, c(1,2), max)   # what is it's max value
+  
+  # only allow high probablility
+  mask <- max_ct > 0.5
+  which_ct <- which_ct * mask
+  
+  # carefully assign 1 colour value per integer using colormap
+  y <- colormap(which_ct/max(which_ct), cbPalette[1:(max(which_ct)+1)])
+  display(y)
+  
+  filename <- paste0(folder, "/", image_name, "_CellMap.tif") 
+  writeImage(y, filename)
+}
 close(pb)
 
 data <- data.frame(image_names, ct_names, 
@@ -125,6 +167,8 @@ names(data) <- c("Image", "CellType",
 
 write.csv(data, file = "CellTypeTotals.csv", row.names = F)
 
+# lock in a cell type order
+data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 
 
 # Plots of cell content
@@ -136,22 +180,27 @@ pdf("Cell Total Plots.pdf")
 
 print(ggplot(d, aes(x = Image, y = Total, fill = CellType)) +
         geom_bar(stat = "identity") +
+        scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
         geom_bar(stat = "identity") +
+        scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
           geom_bar(stat = "identity") +
-          coord_flip())
+        scale_fill_manual(values=cbPalette[-1]) +
+        coord_flip())
   
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
           geom_bar(stat = "identity") +
-          coord_flip())
+        scale_fill_manual(values=cbPalette[-1]) +
+        coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
         geom_bar(stat = "identity") +
+        scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
 # density is the same as total with percentage
@@ -159,11 +208,13 @@ print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
 print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
+        scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
+        scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
 dev.off()
