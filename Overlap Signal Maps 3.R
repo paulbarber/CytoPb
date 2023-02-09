@@ -2,10 +2,15 @@
 # P R Barber, Jan 2023
 # This file is specific to the panel and cell type - MODIFY FOR YOUR APPLICATION
 
-# For each cell type that you define in the loop below,
+# For each cell type that you define in the cell_type_matrix.csv,
 # Calculate the probability map and save as tif in celltype_tif folder
-# Plot bar charts from data about how abundant each cell type is i neach image
+# Plot bar charts from data about how abundant each cell type is in each image
 # output: Cell Total Plots.pdf
+
+# Cell type matrix has a column for each cell type and 
+# a row for each marker. A one indicates positive channel required,
+# a -1 indicates channel should be negative. Empty or NA indicates 
+# we do not care about htat channel.
 
 # User check of working directory.
 print("Working in:")
@@ -16,6 +21,10 @@ stopifnot(proceed == "y")
 
 # Read previous session
 #load("Overlap Signal Maps.RData")
+
+ct_matrix <- read.csv("cell_type_matrix.csv", row.names = 1)
+# make sure no spaces in the marker row names
+row.names(ct_matrix) <- gsub(" ", "", row.names(ct_matrix))
 
 folder <- "celltype_tif"
 dir.create(folder, showWarnings = F)
@@ -64,109 +73,46 @@ addToGlobalArrays <- function(ct_name, image_name, scores){
 
 ############# Define cell types in this loop ######################
 
-pb = txtProgressBar(min = 0, max = length(channels_needed), initial = 0)
+pb = txtProgressBar(min = 0, max = length(images), initial = 0)
 for(i in 1:length(images)){
   
   image_name <- names(images)[i]
   l <- get(image_name)
   setTxtProgressBar(pb,i)
   
-  #####################################################
-  # CD4 Tcells (CD3+ CD4+)   
-  # an extra pop in case of no T regs or effector
-  ct_name <- "CD4Tcell"
-  
-  i_p1 <- l[,,which(channels_needed == "CD3")]
-  i_p2 <- l[,,which(channels_needed == "CD4")]
-  
-  os <-i_p1 * i_p2
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
-  
-  #####################################################
-  # CD8 Tcells (CD3+ CD8+)
-  ct_name <- "CD8Tcell"
-  
-  i_p1 <- l[,,which(channels_needed == "CD3")]
-  i_p2 <- l[,,which(channels_needed == "CD8")]
-  
-  os <-i_p1 * i_p2
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
-  
-  #####################################################
-  # T Effector cells (CD3+ CD4+ CD25-)
-  ct_name <- "TEffcell"
-  
-  i_p1 <- l[,,which(channels_needed == "CD3")]
-  i_p2 <- l[,,which(channels_needed == "CD4")]
-  i_p3 <- l[,,which(channels_needed == "CD25")]
-  
-  os <-i_p1 * i_p2 * (1-i_p3)
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
+  for(j in 1:dim(ct_matrix)[2]){  # cell types
+    
+    ct_name <- names(ct_matrix)[j]
+      
+    # start with an image of ones
+    os <- l[,,1]  # copy existing image
+    os = os/os    # divide it by itself
+      
+    for(k in 1:dim(ct_matrix)[1]){  # markers
+      
+      marker_name <- row.names(ct_matrix)[k]
 
-  #####################################################
-  # T Regulatory cells (CD3+ CD4+ CD25+ FOXP3+)
-  ct_name <- "TRegcell"
-  
-  i_p1 <- l[,,which(channels_needed == "CD3")]
-  i_p2 <- l[,,which(channels_needed == "CD4")]
-  i_p3 <- l[,,which(channels_needed == "CD25")]
-  i_p4 <- l[,,which(channels_needed == "FOXP3")]
-  
-  os <-i_p1 * i_p2 * i_p3 * i_p4
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
-  
-  #####################################################
-  # B cells (CD3- CD19+)
-  ct_name <- "Bcell"
-  
-  i_p1 <- l[,,which(channels_needed == "CD3")]
-  i_p2 <- l[,,which(channels_needed == "CD19")]
-  
-  os <-(1-i_p1) * i_p2
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
-  
-  #####################################################
-  # Endothelium (CD34+ CD31+)
-  ct_name <- "Endothelium"
-  
-  i_p1 <- l[,,which(channels_needed == "CD34")]
-  i_p2 <- l[,,which(channels_needed == "CD31")]
-  
-  os <-i_p1 * i_p2
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
-  
-  #####################################################
-  # Progenitor (CD34+ CD31-)
-  ct_name <- "Progenitor"
-  
-  i_p1 <- l[,,which(channels_needed == "CD34")]
-  i_p2 <- l[,,which(channels_needed == "CD31")]
-  
-  os <-i_p1 * (1-i_p2)
-  
-  # This bit same for all cell types
-  scores <- process_os(os, image_name, ct_name)
-  addToGlobalArrays(ct_name, image_name, scores)
-  
+      v <- ct_matrix[k, j]   # [marker row, cell type col]
+      
+      # skip if channel not needed
+      if(is.na(v)) next
+      if(v==0) next
+      
+      i_p <- l[,,which(channels_needed == marker_name)]
+      
+      # invert if channel is to be -ve
+      if(v < 0) i_p <- (1 - i_p)
+
+      os <- os * i_p
+    }
+    
+    scores <- process_os(os, image_name, ct_name)
+
+    addToGlobalArrays(ct_name, image_name, scores)
+
+  }
 }
+
 close(pb)
 
 data <- data.frame(image_names, ct_names, 
