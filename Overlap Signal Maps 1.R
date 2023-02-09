@@ -170,5 +170,5 @@ if(!file.exists("pos_value_table.csv")) write.csv(pos_table, file = "pos_value_t
 if(!file.exists("neg_value_table.csv")) write.csv(neg_table, file = "neg_value_table.csv")
 
 # Save everything so far
-save.image(file = "Overlap Signal Maps.RData")
+#save.image(file = "Overlap Signal Maps.RData")
 
