@@ -84,13 +84,18 @@ for(j in 1:length(channels_needed)){
     # blur to account for cell size/position uncertainties
     i_p1 <- gblur(i_p1, sigma = sigma)
 
-    # re-scale 0-1
+    # re-scale 0-1 to get an estimate of the probability of being positive.
     i_p1 <- (i_p1 - nv1)/(pv1 - nv1)
     
-    # Threshold/clamp to get an estimate of the probability of being positive.
-    i_p1[i_p1<0] <- 0
-    i_p1[i_p1>1] <- 1
-
+    # Threshold/clamp to make sure strictly 0-1
+    #i_p1[i_p1<0] <- 0
+    #i_p1[i_p1>1] <- 1
+    
+    # Use Sigmoid instead of clamping, bigger f is steeper slope
+    # Will ensure 0-1 without sharp cutoff
+    f = 5
+    i_p1 <- 1/(1+exp(-f*(i_p1-0.5)))
+    
     filename <- paste0(folder, "/", image_name, "_", channel, "_map.png")
     y = colormap(i_p1, jet.colors(256))
     writeImage(y, filename)
@@ -109,7 +114,7 @@ for(j in 1:length(channels_needed)){
 close(pb)
 
 # Save everything so far
-save.image(file = "Overlap Signal Maps.RData")
+#save.image(file = "Overlap Signal Maps.RData")
 
 
 
