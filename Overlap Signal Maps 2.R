@@ -101,10 +101,6 @@ for(j in 1:length(channels_needed)){
     writeImage(y, filename)
     
     # Store these probability maps for later use, in order as channels_needed
-    # (would be good if we could set dimnames of the EBImage to the channel names.
-    # dimnames only supports 3 names. See dimnames(l))
-    # UPDATE and TODO: dimnames holds 3 vectors of names, one for each dimension
-    # So channel names go in the 3rd vector
     l <- get(image_name)
     l <- combine(l, i_p1)
     assign(image_name, l)
@@ -112,6 +108,14 @@ for(j in 1:length(channels_needed)){
   }
 }
 close(pb)
+
+
+# set dim names for collections of cell type maps
+for(i in 1:length(images)){
+  l <- get(names(images)[i])
+  dimnames(l)[[3]] <- channels_needed
+  assign(names(images)[i], l)
+}
 
 # Save everything so far
 #save.image(file = "Overlap Signal Maps.RData")
