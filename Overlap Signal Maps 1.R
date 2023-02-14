@@ -8,7 +8,7 @@
 # Can define channels_needed here to reduce processing later.
 # Estimates the foreground of each image.
 # Save image to channel_png folder
-# Save convinient tables of channels with image numbers.
+# Save convenient tables of channels with image numbers.
 # output: Channel Lists.txt
 # Save table of positive and negative values for each channel of each image.
 # output: pos_value_table.csv neg_value_table.csv
