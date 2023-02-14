@@ -54,9 +54,10 @@ for(i in 1:length(raw)){
   dir.create("img", showWarnings = F)
   filename <- paste0("img/", image_name, ".tiff")
   img_keep <- img[,,named]
-  writeImage(img_keep, filename)
+  writeImage(img_keep/65535, filename, bits.per.sample = 32)
   
-  # NB these are 16bit images 0-65535, Steinbock output are 32bit (unknown range)
+  # NB these are 32bit images 0-1, Steinbock output are 32bit (unknown range).
+  # If they are saved without scaling, they somehow get thresholded and become binary.
 }
 
 # Check panels for all file are identical
