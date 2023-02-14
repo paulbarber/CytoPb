@@ -82,3 +82,6 @@ if(length(raw) > 1){
   }
 }
 
+# remove this large object from the environment
+rm(raw)
+
