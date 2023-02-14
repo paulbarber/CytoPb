@@ -39,7 +39,7 @@ for(i in 1:length(raw)){
   
   # Some will have a '-' and these are labelled
   named <- grep("-", cols)
-  names <- sub("^[0-9]{2,3}[A-Za-z]{1,2}-([-a-zA-Z0-9]+) *\\([a-zA-Z0-9]+\\)$", "\\1", cols)
+  names <- sub("^[0-9]{2,3}[A-Za-z]{1,2}-([-_a-zA-Z0-9]+) *\\([a-zA-Z0-9]+\\)$", "\\1", cols)
   
   panel <- data.frame(channel)
   panel$name <- channel
