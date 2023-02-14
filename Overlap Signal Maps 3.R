@@ -12,6 +12,9 @@
 # a -1 indicates channel should be negative. Empty or NA indicates 
 # we do not care about htat channel.
 
+library(ggplot2)
+library(scales)
+
 # User check of working directory.
 print("Working in:")
 print(getwd())
@@ -22,9 +25,52 @@ stopifnot(proceed == "y")
 # Read previous session
 #load("Overlap Signal Maps.RData")
 
-ct_matrix <- read.csv("cell_type_matrix.csv", row.names = 1)
+# Check for cell_type_matrix
+# If not there create a framework and prompt user to fill it in
+matrix_filename <- "cell_type_matrix.csv"
+if(!file.exists(matrix_filename)){
+
+  ct_matrix <- data.frame(channels_needed)
+  names(ct_matrix) <- "Marker" 
+  
+  # Create some standard cell type columns
+  ct_matrix$Mac <- ""
+  ct_matrix$Mac[which(channels_needed == "CD68")] <- 1
+  
+  ct_matrix$Tcell <- ""
+  ct_matrix$Tcell[which(channels_needed == "CD68")] <- -1
+  ct_matrix$Tcell[which(channels_needed == "CD3")] <- 1
+  
+  ct_matrix$Bcell <- ""
+  ct_matrix$Bcell[which(channels_needed == "CD68")] <- -1
+  ct_matrix$Bcell[which(channels_needed == "CD3")] <- -1
+  ct_matrix$Bcell[which(channels_needed == "CD20")] <- 1
+  
+  write.csv(ct_matrix, matrix_filename, row.names = F)
+  
+  stop("cell_type_matrix.csv file did not exsist.
+        A template has been created. 
+        Please complete with your cell types of interest.")
+}
+
+# Set a colour pallette
+# the #000000 black will be used for unclassified image, remove it when using it for bar plots
+# Useful website: https://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+#cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+#               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+cbPalette <- c("#000000", '#8dd3c7','#ffffb3','#bebada',
+               '#fb8072','#80b1d3','#fdb462','#b3de69',
+               '#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+
+ct_matrix <- read.csv(matrix_filename, row.names = 1)
 # make sure no spaces in the marker row names
 row.names(ct_matrix) <- gsub(" ", "", row.names(ct_matrix))
+
+if(dim(ct_matrix)[2] > (length(cbPalette)-1)){
+  stop("Not enough colours provided for the cell types requested.
+       Add entries to cbPalette in the script.")
+}
 
 folder <- "celltype_tif"
 dir.create(folder, showWarnings = F)
@@ -130,10 +176,6 @@ for(i in 1:length(images)){
   assign(paste0(names(images)[i], "_ct"), ct)
 }
 
-# Set a colour pallette
-# the #000000 black will be used for unclassified image, remove it when using it for bar plots
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
 # Make images of most likely cell type per pixel
 pb = txtProgressBar(min = 0, max = length(images), initial = 0)
 for(i in 1:length(images)){
@@ -176,31 +218,41 @@ data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 #d <- subset(data, CellType != "CD4Tcell")
 d <- data
 
+# if image names are long, make sure there are space to break it up
+if(max(nchar(d$Image > 10))){
+  d$Image <- gsub("_", " ", d$Image)
+}
+
 pdf("Cell Total Plots.pdf")
 
 print(ggplot(d, aes(x = Image, y = Total, fill = CellType)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
           geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
   
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
           geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 # density is the same as total with percentage
@@ -209,12 +261,14 @@ print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 dev.off()
