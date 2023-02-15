@@ -105,6 +105,7 @@ total_over_0.5 <- vector()
 density_over_0.5 <- vector()
 area_over_0.5 <- vector()
 max_prob_area <- vector()
+max_prob_area_perc <- vector()
 
 # Create some names in the environment for the EBImage stacks of probability maps
 for(i in 1:length(images)){
@@ -191,11 +192,15 @@ for(i in 1:length(images)){
   mask <- max_ct > 0.5
   which_ct <- which_ct * mask
   
-  areas <- as.vector(table(which_ct))
+  areas <- as.vector(table(which_ct))  # ERROR HERE IF NOT ALL CELL TYPES REPRESENTED
+  # NEED TO FILL IN MISSING CELL TYPES WITH ZEROS
+  
+  total_area <- dim(which_ct)[1] * dim(which_ct)[2]
   max_prob_area <- c(max_prob_area, areas[-1])   # exclude first area, the bg
+  max_prob_area_perc <- c(max_prob_area_perc, areas[-1]/total_area*100)
   
   # carefully assign 1 colour value per integer using colormap
-  y <- colormap(which_ct/max(which_ct), cbPalette[1:(max(which_ct)+1)])
+  y <- colormap(which_ct/dim(ct_matrix)[2], cbPalette[1:(dim(ct_matrix)[2]+1)])
   #display(y)
   
   filename <- paste0(folder, "/", image_name, "_CellMap.tif") 
@@ -203,15 +208,23 @@ for(i in 1:length(images)){
 }
 close(pb)
 
+#data <- data.frame(image_names, ct_names, 
+#                   total, density, 
+#                   total_over_0.5, density_over_0.5, area_over_0.5,
+#                   max_prob_area, max_prob_area_perc)
+
+#names(data) <- c("Image", "CellType", 
+#                 "Total", "Density", 
+#                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5",
+#                "Max_probability_area", "Max_probability_area_percentage")
+
 data <- data.frame(image_names, ct_names, 
                    total, density, 
-                   total_over_0.5, density_over_0.5, area_over_0.5,
-                   max_prob_area)
+                   total_over_0.5, density_over_0.5, area_over_0.5)
 
 names(data) <- c("Image", "CellType", 
                  "Total", "Density", 
-                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5",
-                 "Max_probability_area")
+                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5")
 
 write.csv(data, file = "CellTypeTotals.csv", row.names = F)
 
@@ -224,6 +237,7 @@ data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 #d <- subset(data, CellType != "CD4Tcell")
 d <- data
 
+# FIX THIS TOO - IT DOES NOT REALLY WORK FOR NOV2022 DATA
 # if image names are long, make sure there are space to break it up
 if(max(nchar(d$Image > 10))){
   d$Image <- gsub("_", " ", d$Image)
@@ -261,11 +275,11 @@ print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
         scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
-print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
-        geom_bar(stat = "identity") +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
+#print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
+#        geom_bar(stat = "identity") +
+#        scale_fill_manual(values=cbPalette[-1]) +
+#        scale_x_discrete(labels = label_wrap(10)) +
+#        coord_flip())
 
 # density is the same as total with percentage
 
@@ -290,11 +304,12 @@ print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
         scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
-print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
-        geom_bar(position = "fill", stat = "identity") +
-        scale_y_continuous(labels = scales::percent) +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
+#print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
+#        geom_bar(position = "fill", stat = "identity") +
+#        scale_y_continuous(labels = scales::percent) +
+#        scale_fill_manual(values=cbPalette[-1]) +
+#        scale_x_discrete(labels = label_wrap(10)) +
+#        coord_flip())
 
 dev.off()
+
