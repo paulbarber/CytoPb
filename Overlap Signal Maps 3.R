@@ -67,7 +67,10 @@ ct_matrix <- read.csv(matrix_filename, row.names = 1)
 # make sure no spaces in the marker row names
 row.names(ct_matrix) <- gsub(" ", "", row.names(ct_matrix))
 
-if(dim(ct_matrix)[2] > (length(cbPalette)-1)){
+n_cell_types <- dim(ct_matrix)[2]
+n_markers <- dim(ct_matrix)[1]
+
+if(n_cell_types > (length(cbPalette)-1)){
   stop("Not enough colours provided for the cell types requested.
        Add entries to cbPalette in the script.")
 }
@@ -133,7 +136,7 @@ for(i in 1:length(images)){
   l <- get(image_name)
   setTxtProgressBar(pb,i)
   
-  for(j in 1:dim(ct_matrix)[2]){  # cell types
+  for(j in 1:n_cell_types){  # cell types
     
     ct_name <- names(ct_matrix)[j]
       
@@ -141,7 +144,7 @@ for(i in 1:length(images)){
     os <- l[,,1]  # copy existing image
     os = os/os    # divide it by itself
       
-    for(k in 1:dim(ct_matrix)[1]){  # markers
+    for(k in 1:n_markers){  # markers
       
       marker_name <- row.names(ct_matrix)[k]
 
@@ -192,15 +195,14 @@ for(i in 1:length(images)){
   mask <- max_ct > 0.5
   which_ct <- which_ct * mask
   
-  areas <- as.vector(table(which_ct))  # ERROR HERE IF NOT ALL CELL TYPES REPRESENTED
-  # NEED TO FILL IN MISSING CELL TYPES WITH ZEROS
+  areas <- as.vector(table(factor(which_ct, levels = 0:n_cell_types))) # factor makes sure all cell types are represented
   
   total_area <- dim(which_ct)[1] * dim(which_ct)[2]
   max_prob_area <- c(max_prob_area, areas[-1])   # exclude first area, the bg
   max_prob_area_perc <- c(max_prob_area_perc, areas[-1]/total_area*100)
   
   # carefully assign 1 colour value per integer using colormap
-  y <- colormap(which_ct/dim(ct_matrix)[2], cbPalette[1:(dim(ct_matrix)[2]+1)])
+  y <- colormap(which_ct/n_cell_types, cbPalette[1:(n_cell_types+1)])
   #display(y)
   
   filename <- paste0(folder, "/", image_name, "_CellMap.tif") 
@@ -208,23 +210,15 @@ for(i in 1:length(images)){
 }
 close(pb)
 
-#data <- data.frame(image_names, ct_names, 
-#                   total, density, 
-#                   total_over_0.5, density_over_0.5, area_over_0.5,
-#                   max_prob_area, max_prob_area_perc)
-
-#names(data) <- c("Image", "CellType", 
-#                 "Total", "Density", 
-#                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5",
-#                "Max_probability_area", "Max_probability_area_percentage")
-
 data <- data.frame(image_names, ct_names, 
                    total, density, 
-                   total_over_0.5, density_over_0.5, area_over_0.5)
+                   total_over_0.5, density_over_0.5, area_over_0.5,
+                   max_prob_area, max_prob_area_perc)
 
 names(data) <- c("Image", "CellType", 
                  "Total", "Density", 
-                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5")
+                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5",
+                "Max_probability_area", "Max_probability_area_percentage")
 
 write.csv(data, file = "CellTypeTotals.csv", row.names = F)
 
@@ -275,11 +269,11 @@ print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
         scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
-#print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
-#        geom_bar(stat = "identity") +
-#        scale_fill_manual(values=cbPalette[-1]) +
-#        scale_x_discrete(labels = label_wrap(10)) +
-#        coord_flip())
+print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
+        geom_bar(stat = "identity") +
+        scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
+        coord_flip())
 
 # density is the same as total with percentage
 
@@ -304,12 +298,12 @@ print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
         scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
-#print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
-#        geom_bar(position = "fill", stat = "identity") +
-#        scale_y_continuous(labels = scales::percent) +
-#        scale_fill_manual(values=cbPalette[-1]) +
-#        scale_x_discrete(labels = label_wrap(10)) +
-#        coord_flip())
+print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
+        geom_bar(position = "fill", stat = "identity") +
+        scale_y_continuous(labels = scales::percent) +
+        scale_fill_manual(values=cbPalette[-1]) +
+        scale_x_discrete(labels = label_wrap(10)) +
+        coord_flip())
 
 dev.off()
 
