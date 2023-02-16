@@ -182,6 +182,7 @@ for(i in 1:length(images)){
 }
 
 # Make images of most likely cell type per pixel
+mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed), data = 0)
 pb = txtProgressBar(min = 0, max = length(images), initial = 0)
 for(i in 1:length(images)){
   ct <- get(paste0(names(images)[i], "_ct"))
@@ -207,8 +208,35 @@ for(i in 1:length(images)){
   
   filename <- paste0(folder, "/", image_name, "_CellMap.tif") 
   writeImage(y, filename)
+  
+  # find average marker strength per cell type
+  strength_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed))
+  colnames(strength_per_ct) <- channels_needed
+  rownames(strength_per_ct) <- names(ct_matrix)
+  img <- images@listData[[i]]   # all channels for this image
+  for(j in 1:n_cell_types){
+    # mask for this cell type
+    mask <- which_ct == j
+    # mean for each channel
+    strength <- vector()
+    for(k in 1:length(channels_needed)){
+      ch <- img[,,k]
+      
+      s <- mean(ch[mask], na.rm = TRUE)
+      if(is.nan(s)){s = 0}
+      strength <- c(strength, s)
+    }
+    strength_per_ct[j,] <- strength
+  }
+  
+  mean_per_ct <- strength_per_ct + mean_per_ct
+
 }
 close(pb)
+
+# Finish the calculation of mean marker strength per cell type
+mean_per_ct <- mean_per_ct / length(images)
+mean_per_ct <- as.data.frame(mean_per_ct)
 
 data <- data.frame(image_names, ct_names, 
                    total, density, 
@@ -307,3 +335,18 @@ print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
 
 dev.off()
 
+
+# heatmap plot of expressions versus cell type
+m <- scale(mean_per_ct)
+m <- as.data.frame(m)
+m$CellType <- rownames(mean_per_ct)
+d <- tidyr::gather(m, Channel, Mean, 1:length(channels_needed), factor_key=TRUE)
+d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
+d$CellType <- factor(d$CellType, levels=unique(d$CellType)) # keep CellType order in plot
+
+pdf("Marker per CellType.pdf")
+print(ggplot(d, aes(CellType, Channel, fill = Mean)) + 
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
+              legend.position = "none"))
+dev.off()
