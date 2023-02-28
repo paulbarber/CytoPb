@@ -350,3 +350,6 @@ print(ggplot(d, aes(CellType, Channel, fill = Mean)) +
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
               legend.position = "none"))
 dev.off()
+
+# Save everything so far
+save.image(file = "Overlap Signal Maps.RData")
