@@ -126,7 +126,7 @@ for (i in 1: length(first_in_pair)){
     filename <- paste0(out_folder, "/", img, "_", ct_names, "_signature.png")
     png(filename)
     suppressMessages(
-      print(ggplot(sig, aes(x = scale_sigma, y = overlap_gradient)) +
+      print(ggplot(sig, aes(x = scale_sigma, y = overlap)) +
       scale_x_log10() +
       geom_line())
     )
