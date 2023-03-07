@@ -352,4 +352,4 @@ print(ggplot(d, aes(CellType, Channel, fill = Mean)) +
 dev.off()
 
 # Save everything so far
-save.image(file = "Overlap Signal Maps.RData")
+#save.image(file = "Overlap Signal Maps.RData")

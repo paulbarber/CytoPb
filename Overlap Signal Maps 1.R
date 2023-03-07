@@ -26,7 +26,7 @@ library(ggplot2)
 #setwd("...")
 
 # Set the scale of the blurring in pixels, usually 5 pixels (5 um)
-sigma = 5
+sigma = 3
 
 # User check of working directory.
 print("Working in:")

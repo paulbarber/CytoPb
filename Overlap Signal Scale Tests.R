@@ -31,7 +31,7 @@ dir.create(out_folder, showWarnings = F)
 
 
 # Define pairs of marker to compare in these 2 lists
-first_in_pair <- c("CD4+CD8a", "CD4", "CD8a")
+first_in_pair <- c("CD4+CD8", "CD4", "CD8a")
 second_in_pair <- c("CD3", "CD3", "CD3")
 
 
@@ -207,13 +207,13 @@ close(pb)
 data <- data.frame(Image, Marker_Pair,
                    Peak_Scale_t, Peak_Scale_sigma, 
                    COM_Scale_t, COM_Scale_sigma, Range_Error)
-write.csv(data, file = "Colocalisation Table.csv", row.names = F)
+write.csv(data, file = "scale_tests Table.csv", row.names = F)
 
 # From previous simulations COM_scale_sigma is linearly proportional to the characteristic separation distance.
 # See: Redefining_Colocalisation_Jan2023
-data <- read.csv(file = "Colocalisation Table.csv")
+data <- read.csv(file = "scale_tests Table.csv")
 
-pdf("Colocalisation Scale.pdf")
+pdf("scale_tests Scale.pdf")
 d <- subset(data, Range_Error == 0)
 print(ggplot(d, aes(x = Image, y = COM_Scale_sigma, fill = Marker_Pair)) +
   geom_bar(stat="identity", position=position_dodge()) +
