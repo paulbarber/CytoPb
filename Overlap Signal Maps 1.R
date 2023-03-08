@@ -25,7 +25,8 @@ library(ggplot2)
 # REMEMBER TO SET WORKING DIRECTORY
 #setwd("...")
 
-# Set the scale of the blurring in pixels, usually 5 pixels (5 um)
+# Set the scale of the blurring in pixels, in tests 3 pixels is best (3 um)
+# Final results are quite insensitive to this. Appearance of cell maps is sensitive.
 sigma = 3
 
 # User check of working directory.
@@ -166,8 +167,12 @@ if(!file.exists("pos_value_table.csv")){
 }
 
 # Write blank files, only if file does not already exist since good work could be overwritten!
-if(!file.exists("pos_value_table.csv")) write.csv(pos_table, file = "pos_value_table.csv")
-if(!file.exists("neg_value_table.csv")) write.csv(neg_table, file = "neg_value_table.csv")
+#if(!file.exists("pos_value_table.csv")) write.csv(pos_table, file = "pos_value_table.csv")
+#if(!file.exists("neg_value_table.csv")) write.csv(neg_table, file = "neg_value_table.csv")
+# It is more normal for these files to be always created here, and modified afterwards if required
+write.csv(pos_table, file = "pos_value_table.csv")
+write.csv(neg_table, file = "neg_value_table.csv")
+
 
 # Save everything so far
 #save.image(file = "Overlap Signal Maps.RData")

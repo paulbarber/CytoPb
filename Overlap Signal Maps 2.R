@@ -121,7 +121,7 @@ for(j in 1:length(channels_needed)){
 close(pb)
 
 
-# set dim names for collections of cell type maps
+# set dim names for collections of marker maps
 for(i in 1:length(images)){
   l <- get(names(images)[i])
   dimnames(l)[[3]] <- channels_needed
