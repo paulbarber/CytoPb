@@ -13,7 +13,6 @@
 # we do not care about that channel.
 
 library(ggplot2)
-library(scales)
 
 # User check of working directory.
 print("Working in:")
@@ -183,6 +182,7 @@ for(i in 1:length(images)){
 
 # Make images of most likely cell type per pixel
 mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed), data = 0)
+pdf("Marker per CellType by image.pdf")
 pb = txtProgressBar(min = 0, max = length(images), initial = 0)
 for(i in 1:length(images)){
   ct <- get(paste0(names(images)[i], "_ct"))
@@ -230,8 +230,23 @@ for(i in 1:length(images)){
   }
   
   mean_per_ct <- strength_per_ct + mean_per_ct
-
+  
+  # heatmap plot of expressions versus cell type per image
+  m <- scale(strength_per_ct)
+  m <- as.data.frame(m)
+  m$CellType <- rownames(strength_per_ct)
+  d <- tidyr::gather(m, Channel, Mean, 1:length(channels_needed), factor_key=TRUE)
+  d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
+  d$CellType <- factor(d$CellType, levels=unique(d$CellType)) # keep CellType order in plot
+  
+  print(ggplot(d, aes(CellType, Channel, fill = Mean)) + 
+          geom_tile() + 
+          theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
+                legend.position = "none") +
+          ggtitle(image_name)) 
+  
 }
+dev.off()
 close(pb)
 
 # Finish the calculation of mean marker strength per cell type
@@ -259,78 +274,63 @@ data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 #d <- subset(data, CellType != "CD4Tcell")
 d <- data
 
-# FIX THIS TOO - IT DOES NOT REALLY WORK FOR NOV2022 DATA
-# if image names are long, make sure there are space to break it up
-if(max(nchar(d$Image > 10))){
-  d$Image <- gsub("_", " ", d$Image)
-}
 
 pdf("Cell Total Plots.pdf")
 
-print(ggplot(d, aes(x = Image, y = Total, fill = CellType)) +
-        geom_bar(stat = "identity") +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
-
-print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-        geom_bar(stat = "identity") +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
-
-print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
-          geom_bar(stat = "identity") +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
-  
-print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
-          geom_bar(stat = "identity") +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
-
-print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
-        geom_bar(stat = "identity") +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
+# print(ggplot(d, aes(x = Image, y = Total, fill = CellType)) +
+#         geom_bar(stat = "identity") +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
+# 
+# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+#         geom_bar(stat = "identity") +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
+# 
+# print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
+#           geom_bar(stat = "identity") +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
+#   
+# print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
+#           geom_bar(stat = "identity") +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
+# 
+# print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
+#         geom_bar(stat = "identity") +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 # density is the same as total with percentage
 
-print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-        geom_bar(position = "fill", stat = "identity") +
-        scale_y_continuous(labels = scales::percent) +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
+# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+#         geom_bar(position = "fill", stat = "identity") +
+#         scale_y_continuous(labels = scales::percent) +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
-print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
-        geom_bar(position = "fill", stat = "identity") +
-        scale_y_continuous(labels = scales::percent) +
-        scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
-        coord_flip())
+# print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
+#         geom_bar(position = "fill", stat = "identity") +
+#         scale_y_continuous(labels = scales::percent) +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
-        scale_x_discrete(labels = label_wrap(10)) +
         coord_flip())
 
 dev.off()
