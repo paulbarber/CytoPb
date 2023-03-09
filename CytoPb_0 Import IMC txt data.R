@@ -58,6 +58,7 @@ for(i in 1:length(raw)){
   
   # NB these are 32bit images 0-1, Steinbock output are 32bit (unknown range).
   # If they are saved without scaling, they somehow get thresholded and become binary.
+  # This seems to be a problem with EBImage.
 }
 
 # Check panels for all file are identical
@@ -85,4 +86,26 @@ if(length(raw) > 1){
 
 # remove this large object from the environment
 rm(raw)
+
+print("If your image names are long, now is a good time to shorten them.")
+
+# Example image renaming, modify it for your needs and run shorten_image_names()
+
+shorten_image_names <- function(){
+  
+  filenames <- list.files(path = "img")
+  
+  for(i in filenames){
+
+    new_name <- paste0(strex::str_before_first(i, "_"),
+                       "_",
+                       strex::str_after_last(i, "_"))
+  
+    file.rename(paste0("img/", i), paste0("img/", new_name))      
+    
+  }
+}
+
+#shorten_image_names()
+
 
