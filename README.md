@@ -1,5 +1,5 @@
 # CytoPb: Cell Probabilities
-For multiplexed imaging (IF, IMC, ...), use of marker probability densities to generate cell type maps and interaction signatures in a pixel-based, segmentation-free and threshold-free (gating-free) method.
+For multiplexed imaging (IF, IMC, ...), this code uses marker probability densities to generate cell type maps and interaction signatures in a pixel-based, segmentation-free and threshold-free (gating-free) method.
 
 The usual method for cell type determination in multiplexed images is to segment cells using a nuclear and/or membrane marker, and maybe use a random forest or deep learning classifier. Then to use channel gating (thresholding) to determine if the segmented cells are positive or negative for particular markers (like the cell differentiation (CD) markers). Making hard (irreversible) decisions about which pixels constitute particular cells and which levels of marker are positive is sometimes difficult and subjective. Especially if your marker staining did not turn out well.
 
