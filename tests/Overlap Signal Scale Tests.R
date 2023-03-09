@@ -2,8 +2,11 @@
 # P R Barber, Feb 2023
 # Marker colocalisations
 
-# Test cell markers that should colocalise with those that should not
+# Test cell markers that should colocalise and those that should not.
 # This can inform the choice of sigma (blurring factor) in Script 1.
+
+# Further tests show it may be better to vary sigma and see the effect on the 
+# marker per cell type plot. The results are very insensitive to sigma.
 
 # Input is the marker tif files in celltype_tif
 # You define the pairs of marker you want to colocalise
