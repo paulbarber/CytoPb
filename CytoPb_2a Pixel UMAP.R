@@ -22,7 +22,7 @@ proceed = readLines(n=1)
 stopifnot(proceed == "y")
 
 # Read previous session
-load("Overlap Signal Maps.RData")
+load("CytoPb.RData")
 
 image <- get(names(images)[1])
 
@@ -115,5 +115,5 @@ ggplot(data3m, aes(y = cluster, x = channel, fill = value)) +
 dev.off()
 
 # Save everything so far
-save.image(file = "Overlap Signal Maps.RData")
+save.image(file = "CytoPb.RData")
 

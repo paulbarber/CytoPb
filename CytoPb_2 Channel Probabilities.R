@@ -20,7 +20,7 @@ proceed = readLines(n=1)
 stopifnot(proceed == "y")
 
 # Read previous session
-#load("Overlap Signal Maps.RData")
+#load("CytoPb.RData")
 
 # Read in pos and neg values
 pos_table <- read.csv("pos_value_table.csv")
@@ -129,7 +129,7 @@ for(i in 1:length(images)){
 }
 
 # Save everything so far
-#save.image(file = "Overlap Signal Maps.RData")
+#save.image(file = "CytoPb.RData")
 
 
 

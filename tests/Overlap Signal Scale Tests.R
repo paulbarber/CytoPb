@@ -41,7 +41,7 @@ library(strex)
 
 
 # Read previous session
-#load("Overlap Signal Maps.RData")
+#load("CytoPb.RData")
 
 img_list <- names(images)
 

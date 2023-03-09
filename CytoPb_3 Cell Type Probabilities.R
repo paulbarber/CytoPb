@@ -23,7 +23,7 @@ proceed = readLines(n=1)
 stopifnot(proceed == "y")
 
 # Read previous session
-#load("Overlap Signal Maps.RData")
+#load("CytoPb.RData")
 
 # Check for cell_type_matrix
 # If not there create a framework and prompt user to fill it in
@@ -352,4 +352,4 @@ print(ggplot(d, aes(CellType, Channel, fill = Mean)) +
 dev.off()
 
 # Save everything so far
-#save.image(file = "Overlap Signal Maps.RData")
+#save.image(file = "CytoPb.RData")
