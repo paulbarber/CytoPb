@@ -291,12 +291,12 @@ pdf("Cell Total Plots.pdf")
 #           geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
-#   
-# print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
-#           geom_bar(stat = "identity") +
-#         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
-# 
+
+print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
+          geom_bar(stat = "identity") +
+        scale_fill_manual(values=cbPalette[-1]) +
+        coord_flip())
+
 # print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
 #         geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
