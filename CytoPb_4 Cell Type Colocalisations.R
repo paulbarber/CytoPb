@@ -1,4 +1,4 @@
-# Overlap Signal Maps: Script 4
+# CytoPb: Script 4 Cell Type Colocalisations
 # P R Barber, Jan 2023
 # Cell type colocalisations
 

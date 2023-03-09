@@ -1,4 +1,4 @@
-# Overlap Signal Maps: Script 2
+# CytoPb: Script 2 Make Channel Probabilities
 # P R Barber, Jan 2023
 
 # Following from script 1 (using same working directory).

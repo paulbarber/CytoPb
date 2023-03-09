@@ -1,4 +1,4 @@
-# Overlap Signal Maps: Script 1
+# CytoPb: Script 1 Determine Channel Ranges
 # P R Barber, Jan 2023
 
 # Takes in the multi-channel tiff images and the panel.csv file.

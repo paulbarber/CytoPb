@@ -1,4 +1,4 @@
-# Overlap Signal Maps: Script 3
+# CytoPb: Script 3 Cell Type Probabilities
 # P R Barber, Jan 2023
 # This file is specific to the panel and cell type - MODIFY FOR YOUR APPLICATION
 

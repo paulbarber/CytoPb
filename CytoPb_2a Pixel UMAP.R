@@ -1,4 +1,4 @@
-# Overlap Signal Maps: Script 2a
+# CytoPb: Script 2a Pixel UMAP
 # P R Barber, Jan 2023
 
 # Following from script 2 (using same working directory).
@@ -25,7 +25,6 @@ stopifnot(proceed == "y")
 load("Overlap Signal Maps.RData")
 
 image <- get(names(images)[1])
-image <- `S0715_CArman-5060-1_014`
 
 if(option == "All" | option == "Random"){  # Form matrix of all data
   

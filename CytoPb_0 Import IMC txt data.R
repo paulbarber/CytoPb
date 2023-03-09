@@ -1,4 +1,4 @@
-# Overlap Signal Maps: Script 0
+# CytoPb: Script 0
 # P R Barber, Jan 2023
 
 # read raw data from txt files, make tiff and panel.csv
