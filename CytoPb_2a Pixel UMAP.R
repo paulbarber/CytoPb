@@ -1,4 +1,4 @@
-# CytoPb: Script 2a Pixel UMAP
+# CytoPb: Script 2a Pixel UMAP - EXPERIMENTAL/UNDER DEVELOPMENT
 # P R Barber, Jan 2023
 
 # Following from script 2 (using same working directory).
