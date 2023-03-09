@@ -45,9 +45,10 @@ panel <- read.csv(panel_location)
 panel_keep <- subset(panel, keep == 1)
 panel_keep$image_number <- 1:dim(panel_keep)[1]
 
-# Channels needed for identification
-#channels_needed <- c("CD3", "CD4", "CD8", "CD19", "CD25", "FOXP3", "CD34", "CD31", "CD45")
+# Channels needed for identification 
 channels_needed <- panel_keep$name
+# (This can be specified to ignore other channels, otherwise all keep channels are used).
+#channels_needed <- c("CD3", "CD4", "CD8", "CD19", "CD25", "FOXP3", "CD34", "CD31", "CD45")
 panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
 # folder to save channel QC images to
@@ -164,14 +165,14 @@ if(!file.exists("pos_value_table.csv")){
     }
   }
   close(pb)
-}
 
-# Write blank files, only if file does not already exist since good work could be overwritten!
-#if(!file.exists("pos_value_table.csv")) write.csv(pos_table, file = "pos_value_table.csv")
-#if(!file.exists("neg_value_table.csv")) write.csv(neg_table, file = "neg_value_table.csv")
-# It is more normal for these files to be always created here, and modified afterwards if required
-write.csv(pos_table, file = "pos_value_table.csv")
-write.csv(neg_table, file = "neg_value_table.csv")
+  # Write blank files, only if file does not already exist since good work could be overwritten!
+  #if(!file.exists("pos_value_table.csv")) write.csv(pos_table, file = "pos_value_table.csv")
+  #if(!file.exists("neg_value_table.csv")) write.csv(neg_table, file = "neg_value_table.csv")
+  # It is more normal for these files to be always created here, and modified afterwards if required
+  write.csv(pos_table, file = "pos_value_table.csv")
+  write.csv(neg_table, file = "neg_value_table.csv")
+}
 
 
 # Save everything so far
