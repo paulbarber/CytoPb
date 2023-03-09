@@ -10,7 +10,6 @@
 # Save the complete workspace for follow on scripts.
 
 library(ggplot2)
-library(scales)
 
 # User check of working directory.
 print("Working in:")
@@ -34,16 +33,9 @@ d <- tidyr::gather(pos_table, Image, positive.value, 4:dim(pos_table)[2], factor
 d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
 d$Image <- as.character(d$Image)
 
-# if image names are long, make sure there are space to break it up
-if(max(nchar(d$Image)) > 10){
-  d$Image <- gsub("_", " ", d$Image)
-  d$Image <- gsub("\\.", " ", d$Image)
-}
-
 pdf("Positive Value Plot.pdf")
 print(ggplot(d, aes(Channel, Image, fill = log10(positive.value))) + 
   geom_tile() + 
-  scale_y_discrete(labels = label_wrap(10)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
         legend.position = "none"))
 dev.off()
