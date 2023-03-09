@@ -13,7 +13,7 @@ Clone or download the repository files. Set your R working directory to the loca
 
 ## How to cite
 
-Please cite the repository URL. There are no publications associated with the code yet. 
+Please cite the repository URL (https://github.com/paulbarber/CytoPb). There are no publications associated with the code yet. 
 
 
 ## Licence
