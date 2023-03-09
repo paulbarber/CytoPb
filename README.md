@@ -11,3 +11,15 @@ This method copes with all the complex marker patterns usually used in immunolog
 
 Clone or download the repository files. Set your R working directory to the location of your data. Script 0 will expect a "raw" folder of raw data within that directory. The scripts work mainly with stacked tiff files which will and should be placed in an "img" folder. Use each script in turn. read the comments at the top of each script about what the inputs and outputs are.
 
+## How to cite
+
+Please cite the repository URL. There are no publications associated with the code yet. 
+
+
+## Licence
+
+CytoPb is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+CytoPb is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with CytoPb; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
