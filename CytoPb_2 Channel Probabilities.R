@@ -18,6 +18,10 @@ print("Enter 'y' to proceed:")
 proceed = readLines(n=1)
 stopifnot(proceed == "y")
 
+# folder to save channel images to
+folder <- "channel_png"
+dir.create(folder, showWarnings = F)
+
 # Read previous session
 #load("CytoPb.RData")
 
@@ -64,26 +68,19 @@ for(j in 1:length(channels_needed)){
     table_name <- make.names(image_name)   # to match table col
     nv1 <- neg_table[which(neg_table$Channel == channel), table_name]
     pv1 <- pos_table[which(pos_table$Channel == channel), table_name]
-    pv1a = pv1 # for display
-    
+
     # Check these values, if nv is NA set to 0, if pv is NA set to large number (>65k for 16 bit IMC)
     if(is.na(nv1)) nv1 = 0
     if(is.na(pv1)) {
       pv1 = 100000
-      pv1a = 2 # for display
     }
 
-    # scale 0-1, only for display
-    i_p1a <- (i_p1 - nv1)/(pv1a - nv1)
+    # Write a png of the channel for convenience
+    # I cannot get EBImage to write a nice image out! This is the best I can do.
+    # It uses png::writePNG
+    filename <- paste0(folder, "/", image_name, "_", channel, ".png")
+    writeImage(i_p1*256, filename)
 
-    # Threshold/clamp to get an estimate of the probability of being positive.
-    i_p1a[i_p1a<0] <- 0
-    i_p1a[i_p1a>1] <- 1
-
-    filename <- paste0(folder, "/", image_name, "_", channel, "_scaled.png")
-    writeImage(i_p1a, filename)
-
-    
     # blur to account for cell size/position uncertainties
     i_p1 <- gblur(i_p1, sigma = sigma)
 
