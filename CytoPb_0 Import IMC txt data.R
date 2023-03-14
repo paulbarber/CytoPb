@@ -1,7 +1,7 @@
 # CytoPb: Script 0
 # P R Barber, Jan 2023
 
-# read raw data from txt files, make tiff and panel.csv
+# read raw data from IMC txt files, make tiff and panel.csv
 
 #BiocManager::install("imcRtools")
 library(imcRtools)
