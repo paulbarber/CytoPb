@@ -8,19 +8,36 @@
 library(cytomapper)
 library(strex)
 
-# User check of working directory.
+# Image scale
+scale = 0.37744  # um per pixel
+#scale = 0.75488  # um per pixel in the montage files
+
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
 print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
+print(working_folder)
 
 # where are the raw tif files
-folder <- "raw"
-raw <- loadImages(folder)
+raw_folder <- paste0(working_folder, "/raw")
+if(!dir.exists(raw_folder)){
+  stop("There is no 'raw' data folder")
+}
+
+# define file names
+channelNames_filename <- paste0(working_folder, "/channelNames.txt")
+panel_filename <- paste0(working_folder, "/panel.csv")
+
+# create output folders
+img_folder <- paste0(working_folder, "/img/")
+dir.create(img_folder, showWarnings = F)
+
+# Load raw images
+raw <- loadImages(raw_folder)
 
 # read in the channel names
-cn <- read.delim("channelNames.txt", header = F)
+cn <- read.delim(channelNames_filename, header = F)
 channel_descriptions <- str_after_last(cn$V1, " - ")
 channel_names <- str_before_first(cn$V1, " - ")
 # keep channel names without a description as well
@@ -40,8 +57,6 @@ panel$name <- channel_names
 panel$keep <- keep
 panel$description <- channel_descriptions
 
-dir.create("img", showWarnings = F)
-
 # Loop over all the files
 for(i in 1:length(raw)){
   image_name <- names(raw)[i]
@@ -49,15 +64,14 @@ for(i in 1:length(raw)){
   img <- raw@listData[[i]]
 
   # Save the channels to keep in a tiff in the img folder
-  filename <- paste0("img/", image_name, ".tiff")
+  filename <- paste0(img_folder, image_name, ".tiff")
   img_keep <- img[,,(keep==1)]
   writeImage(img_keep, filename, bits.per.sample = 16)
   # NB these are 16bit images
 }
 
 # write the panel file
-filename <- "panel.csv"
-write.csv(panel, filename, row.names = F)
+write.csv(panel, panel_filename, row.names = F)
 
 # remove this large object from the environment
 rm(raw)
@@ -68,7 +82,7 @@ print("If your image names are long, now is a good time to shorten them.")
 
 shorten_image_names <- function(){
   
-  filenames <- list.files(path = "img")
+  filenames <- list.files(path = img_folder)
   
   for(i in filenames){
 
@@ -76,7 +90,7 @@ shorten_image_names <- function(){
                        "_",
                        strex::str_after_last(i, "_"))
   
-    file.rename(paste0("img/", i), paste0("img/", new_name))      
+    file.rename(paste0(img_folder, i), paste0(img_folder, new_name))      
     
   }
 }
