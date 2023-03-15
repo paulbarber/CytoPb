@@ -7,16 +7,33 @@
 library(imcRtools)
 library(EBImage)
 
-# User check of working directory.
-print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
+# Image scale
+scale = 1  # um per pixel
 
-# where are the txt files
-folder <- "raw"
-raw <- readImagefromTXT(folder)
+
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
+print("Working in:")
+print(working_folder)
+
+# where are the raw txt files
+raw_folder <- paste0(working_folder, "/raw")
+if(!dir.exists(raw_folder)){
+  stop("There is no 'raw' data folder")
+}
+
+# define file names
+panel_filename <- paste0(working_folder, "/panel.csv")
+
+# create output folders
+img_folder <- paste0(working_folder, "/img/")
+dir.create(img_folder, showWarnings = F)
+
+
+# Read in the raaw data
+raw <- readImagefromTXT(raw_folder)
 
 # Loop over all the files
 for(i in 1:length(raw)){
@@ -26,7 +43,7 @@ for(i in 1:length(raw)){
   channel <- sub("Di", "", dimnames(img)[[3]])
   
   # There is Target information in the first line of the text file
-  con <- file(paste0(folder, "/", image_name, ".txt"), "r")
+  con <- file(paste0(raw_folder, "/", image_name, ".txt"), "r")
   header <- readLines(con, n = 1)
   close(con)
   cols <- strsplit(header, "\t")
@@ -51,8 +68,7 @@ for(i in 1:length(raw)){
   assign(paste0("panel", i), panel)
   
   # Save the channels to keep in a tiff in the img folder
-  dir.create("img", showWarnings = F)
-  filename <- paste0("img/", image_name, ".tiff")
+  filename <- paste0(img_folder, image_name, ".tiff")
   img_keep <- img[,,named]
   writeImage(img_keep/65535, filename, bits.per.sample = 32)
   
@@ -64,8 +80,7 @@ for(i in 1:length(raw)){
 # Check panels for all file are identical
 # assume panel1 is the one
 panel <- panel1
-filename <- "panel.csv"
-write.csv(panel, filename, row.names = F)
+write.csv(panel, panel_filename, row.names = F)
 
 # Check and save any others that are not the same
 if(length(raw) > 1){
@@ -73,7 +88,7 @@ if(length(raw) > 1){
   for(i in 2:length(raw)){
       p <- get(paste0("panel", i))
       if(!identical(p, panel)){
-        filename <- paste0("panel_", names(raw)[i], ".csv")
+        filename <- paste0(working_folder, "\panel_", names(raw)[i], ".csv")
         write.csv(p, filename, row.names = F)
         all_the_same = FALSE
       }
@@ -93,15 +108,15 @@ print("If your image names are long, now is a good time to shorten them.")
 
 shorten_image_names <- function(){
   
-  filenames <- list.files(path = "img")
+  filenames <- list.files(path = img_folder)
   
   for(i in filenames){
-
+    
     new_name <- paste0(strex::str_before_first(i, "_"),
                        "_",
                        strex::str_after_last(i, "_"))
-  
-    file.rename(paste0("img/", i), paste0("img/", new_name))      
+    
+    file.rename(paste0(img_folder, i), paste0(img_folder, new_name))      
     
   }
 }
