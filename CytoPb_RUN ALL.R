@@ -6,7 +6,7 @@ working_folder <- choose.dir(caption = "Select data folder")
 
 # Optionally run an import script
 #source("CytoPb_0 Import CODEX tif data.R")
-source("CytoPb_0 Import IMC txt data.R")
+#source("CytoPb_0 Import IMC txt data.R")
 
 # Specify options
 #image_scale_umperpixel = 0.37744  # um per pixel, default is 1
