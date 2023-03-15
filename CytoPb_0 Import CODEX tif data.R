@@ -9,8 +9,8 @@ library(cytomapper)
 library(strex)
 
 # Image scale
-scale = 0.37744  # um per pixel
-#scale = 0.75488  # um per pixel in the montage files
+image_scale_umperpixel = 0.37744  # um per pixel
+#image_scale_umperpixel = 0.75488  # um per pixel in the montage files
 
 if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
@@ -32,6 +32,8 @@ panel_filename <- paste0(working_folder, "/panel.csv")
 # create output folders
 img_folder <- paste0(working_folder, "/img/")
 dir.create(img_folder, showWarnings = F)
+
+
 
 # Load raw images
 raw <- loadImages(raw_folder)

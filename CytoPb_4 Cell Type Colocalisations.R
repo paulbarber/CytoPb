@@ -15,16 +15,19 @@
 # Make a plot of the scale space characteristic distances
 # output: Colocalisation Scale.pdf
 
-# User check of working directory.
+
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
 print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
+print(working_folder)
+
+global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
 # Where to look for all the cell type maps
-in_folder <- "celltype_tif"
-out_folder <- "colocalisation_output"
+in_folder <- paste0(working_folder, "/celltype_tif/")
+out_folder <- paste0(working_folder, "/colocalisation_output/")
 dir.create(out_folder, showWarnings = F)
 
 
@@ -110,8 +113,8 @@ for (i in 1: length(first_in_pair)){
     ct2 <- second_in_pair[i]
     ct_names <- paste0(ct1, "_", ct2)
     
-    filename1 <- paste0(in_folder, "/", img, "_", ct1, ".tif")
-    filename2 <- paste0(in_folder, "/", img, "_", ct2, ".tif")
+    filename1 <- paste0(in_folder, img, "_", ct1, ".tif")
+    filename2 <- paste0(in_folder, img, "_", ct2, ".tif")
     
     img1 <- readImage(filename1)
     img2 <- readImage(filename2)
@@ -123,7 +126,7 @@ for (i in 1: length(first_in_pair)){
     com_d <- sum(sig$overlap_gradient)
     
     # plot overlap versus scale
-    filename <- paste0(out_folder, "/", img, "_", ct_names, "_signature.png")
+    filename <- paste0(out_folder, img, "_", ct_names, "_signature.png")
     png(filename)
     suppressMessages(
       print(ggplot(sig, aes(x = scale_sigma, y = overlap)) +
@@ -165,7 +168,7 @@ for (i in 1: length(first_in_pair)){
     ss2 <- scaleSpace(img2, t)
   
     ss <- rgbImage(red = ss1/max(ss1), green = ss2/max(ss2))
-    filename <- paste0(out_folder, "/", img, "_", ct_names, ".png")
+    filename <- paste0(out_folder, img, "_", ct_names, ".png")
     writeImage(ss, filename)
   }
   

@@ -3,7 +3,7 @@
 # This file is specific to the panel and cell type - MODIFY FOR YOUR APPLICATION
 
 # For each cell type that you define in the cell_type_matrix.csv,
-# Calculate the probability map and save as tif in celltype_tif folder
+# Calculate the probability map and save as tif in celltype_maps folder
 # Plot bar charts from data about how abundant each cell type is in each image
 # output: Cell Total Plots.pdf
 
@@ -14,27 +14,38 @@
 
 library(ggplot2)
 
-# User check of working directory.
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
 print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
+print(working_folder)
 
-folder <- "celltype_tif"
-dir.create(folder, showWarnings = F)
+global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
-map_folder <- "celltype_maps"
-dir.create(map_folder, showWarnings = F)
+# File locations
+matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
+cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
+markerpercellbyimage_filename <- paste0(working_folder, "/Marker per CellType by image.pdf")
+markerpercell_filename <- paste0(working_folder, "/Marker per CellType.pdf")
+CellTypeTotals_filename <- paste0(working_folder, "/CellTypeTotals.csv")
+CellTotalPlotsfilename <- paste0(working_folder, "/Cell Total Plots.pdf")
+
+# folder to save images to
+celltype_tif_folder <- paste0(working_folder, "/celltype_tif/")
+dir.create(celltype_tif_folder, showWarnings = F)
+celltype_map_folder <- paste0(working_folder, "/celltype_maps/")
+dir.create(celltype_map_folder, showWarnings = F)
+
+
 
 # Read previous session
-#load("CytoPb.RData")
+#load(global_data_filename)
 
 prob_threshold <- 0.5
 
 # Check for cell_type_matrix
 # If not there create a framework and prompt user to fill it in
-matrix_filename <- "cell_type_matrix.csv"
 if(!file.exists(matrix_filename)){
 
   ct_matrix <- data.frame(channels_needed)
@@ -66,9 +77,9 @@ if(!file.exists(matrix_filename)){
 #cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
 #               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-if(file.exists("cell_type_colours.txt")){
+if(file.exists(cell_type_colours_filename)){
 
-  cb <- read.delim("cell_type_colours.txt", header = F)
+  cb <- read.delim(cell_type_colours_filename, header = F)
   cbPalette <- c("black", cb$V1) 
     
 }else{
@@ -89,13 +100,13 @@ n_markers <- dim(ct_matrix)[1]
 
 if(n_cell_types > (length(cbPalette)-1)){
   stop("Not enough colours provided for the cell types requested.
-       Add entries to cbPalette in the script.")
+       Add entries to a cell_type_colours.txt file.")
 }
 
 # How to process the cell type maps
 process_os <- function(os, image_name, ct_name){
   
-  filename <- paste0(folder, "/", image_name, "_", ct_name, ".tif") 
+  filename <- paste0(celltype_tif_folder, "/", image_name, "_", ct_name, ".tif") 
   writeImage(os, filename)
   
   pixels <- length(os)
@@ -197,7 +208,7 @@ for(i in 1:length(images)){
 
 # Make images of most likely cell type per pixel
 mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed), data = 0)
-pdf("Marker per CellType by image.pdf")
+pdf(markerpercellbyimage_filename)
 pb = txtProgressBar(min = 0, max = length(images), initial = 0)
 for(i in 1:length(images)){
   ct <- get(paste0(names(images)[i], "_ct"))
@@ -221,7 +232,7 @@ for(i in 1:length(images)){
   y <- colormap(which_ct/n_cell_types, cbPalette[1:(n_cell_types+1)])
   #display(y)
   
-  filename <- paste0(map_folder, "/", image_name, "_CellMap.tif") 
+  filename <- paste0(celltype_map_folder, "/", image_name, "_CellMap.tif") 
   writeImage(y, filename)
   
   # find average marker strength per cell type
@@ -278,7 +289,7 @@ names(data) <- c("Image", "CellType",
                  "Total_over_0.5", "Density_over_0.5", "Area_over_0.5",
                 "Max_probability_area", "Max_probability_area_percentage")
 
-write.csv(data, file = "CellTypeTotals.csv", row.names = F)
+write.csv(data, file = CellTypeTotals_filename, row.names = F)
 
 # lock in a cell type order
 data$CellType <- factor(data$CellType, levels = names(ct_matrix))
@@ -290,17 +301,17 @@ data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 d <- data
 
 
-pdf("Cell Total Plots.pdf")
+pdf(CellTotalPlotsfilename)
 
 # print(ggplot(d, aes(x = Image, y = Total, fill = CellType)) +
 #         geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
  
- print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-         geom_bar(stat = "identity") +
-         scale_fill_manual(values=cbPalette[-1]) +
-         coord_flip())
+# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+#         geom_bar(stat = "identity") +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
  
 # print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
 #           geom_bar(stat = "identity") +
@@ -324,11 +335,11 @@ print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
 
 # density is the same as total with percentage
 
- print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-         geom_bar(position = "fill", stat = "identity") +
-         scale_y_continuous(labels = scales::percent) +
-         scale_fill_manual(values=cbPalette[-1]) +
-         coord_flip())
+# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+#         geom_bar(position = "fill", stat = "identity") +
+#         scale_y_continuous(labels = scales::percent) +
+#         scale_fill_manual(values=cbPalette[-1]) +
+#         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
@@ -359,7 +370,7 @@ d <- tidyr::gather(m, Channel, Mean, 1:length(channels_needed), factor_key=TRUE)
 d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
 d$CellType <- factor(d$CellType, levels=unique(d$CellType)) # keep CellType order in plot
 
-pdf("Marker per CellType.pdf")
+pdf(markerpercell_filename)
 print(ggplot(d, aes(CellType, Channel, fill = Mean)) + 
         geom_tile() + 
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
@@ -367,4 +378,4 @@ print(ggplot(d, aes(CellType, Channel, fill = Mean)) +
 dev.off()
 
 # Save everything so far
-#save.image(file = "CytoPb.RData")
+#save.image(file = global_data_filename)

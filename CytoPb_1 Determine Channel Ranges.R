@@ -27,18 +27,36 @@ library(ggplot2)
 
 # Set the scale of the blurring in pixels, in tests 3 pixels is best (3 um)
 # Final results are quite insensitive to this. Appearance of cell maps is sensitive.
-sigma = ceiling(3 / scale)
+if(!exists("image_scale_umperpixel")){
+  image_scale_umperpixel = 1
+  }
+sigma = ceiling(3 / image_scale_umperpixel)
 
-# User check of working directory.
+
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
 print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
+print(working_folder)
+
+global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
 # image and panel file locations
-image_location <- "img"
-panel_location <- "panel.csv"
+image_location <- paste0(working_folder, "/img")
+panel_location <- paste0(working_folder, "/panel.csv")
+
+# File locations
+channel_list_filename <- paste0(working_folder, "/Channel Lists.txt")
+pos_value_filename <- paste0(working_folder, "/pos_value_table.csv")
+neg_value_filename <- paste0(working_folder, "/neg_value_table.csv")
+
+# folder to save channel QC images to
+channel_png_folder <- paste0(working_folder, "/channel_png/")
+dir.create(channel_png_folder, showWarnings = F)
+
+
+
 
 # read in channel names
 panel <- read.csv(panel_location)
@@ -51,11 +69,7 @@ channels_needed <- panel_keep$name
 #channels_needed <- c("CD3", "CD4", "CD8", "CD19", "CD25", "FOXP3", "CD34", "CD31", "CD45")
 panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
-# folder to save channel QC images to
-folder <- "channel_png"
-dir.create(folder, showWarnings = F)
-
-sink(file = "Channel Lists.txt")
+sink(file = channel_list_filename)
 print(paste("All channel names in order are:"))
 print(panel_keep)
 print(paste("Channels needed for cell identification are:"))
@@ -118,7 +132,7 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   
   
   image_name <- names(image)[1]
-  filename <- paste0(folder, "/", image_name, "_", channel, "_fgmask.png")
+  filename <- paste0(channel_png_folder, image_name, "_", channel, "_fgmask.png")
   writeImage(img4, filename)
   
   
@@ -168,10 +182,10 @@ for(i in 1:length(images)){
 }
 close(pb)
 
-write.csv(pos_table, file = "pos_value_table.csv")
-write.csv(neg_table, file = "neg_value_table.csv")
+write.csv(pos_table, file = pos_value_filename)
+write.csv(neg_table, file = neg_value_filename)
 
 
 # Save everything so far
-#save.image(file = "CytoPb.RData")
+#save.image(file = global_data_filename)
 

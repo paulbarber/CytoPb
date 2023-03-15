@@ -11,24 +11,41 @@
 
 library(ggplot2)
 
-# User check of working directory.
-print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
 
-# folder to save channel images to
-folder <- "channel_png"
-dir.create(folder, showWarnings = F)
+
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
+print("Working in:")
+print(working_folder)
+
+global_data_filename <- paste0(working_folder, "/CytoPb.RData")
+
+# image and panel file locations
+image_location <- paste0(working_folder, "/img")
+panel_location <- paste0(working_folder, "/panel.csv")
+
+# File locations
+channel_list_filename <- paste0(working_folder, "/Channel Lists.txt")
+pos_value_filename <- paste0(working_folder, "/pos_value_table.csv")
+neg_value_filename <- paste0(working_folder, "/neg_value_table.csv")
+pos_value_plot_filename <- paste0(working_folder, "/Positive Value Plot.pdf")
+
+# folder to save channel QC images to
+channel_png_folder <- paste0(working_folder, "/channel_png/")
+dir.create(channel_png_folder, showWarnings = F)
+
+
 
 # Read previous session
-#load("CytoPb.RData")
+#load(global_data_filename)
 
 # Read in pos and neg values
-pos_table <- read.csv("pos_value_table.csv")
-neg_table <- read.csv("neg_value_table.csv")
+pos_table <- read.csv(pos_value_filename)
+neg_table <- read.csv(neg_value_filename)
 
+# Blue to red pallette
 jet.colors = colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
 
 # SNR plot from positive values
@@ -37,7 +54,7 @@ d <- tidyr::gather(pos_table, Image, positive.value, 4:dim(pos_table)[2], factor
 d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
 d$Image <- as.character(d$Image)
 
-pdf("Positive Value Plot.pdf")
+pdf(pos_value_plot_filename)
 print(ggplot(d, aes(Channel, Image, fill = log10(positive.value))) + 
   geom_tile() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
@@ -78,7 +95,7 @@ for(j in 1:length(channels_needed)){
     # Write a png of the channel for convenience
     # I cannot get EBImage to write a nice image out! This is the best I can do.
     # It uses png::writePNG
-    filename <- paste0(folder, "/", image_name, "_", channel, ".png")
+    filename <- paste0(channel_png_folder, image_name, "_", channel, ".png")
     writeImage(i_p1*256, filename)
 
     # blur to account for cell size/position uncertainties
@@ -96,7 +113,7 @@ for(j in 1:length(channels_needed)){
     f = 5
     i_p1 <- 1/(1+exp(-f*(i_p1-0.5)))
     
-    filename <- paste0(folder, "/", image_name, "_", channel, "_map.png")
+    filename <- paste0(channel_png_folder, image_name, "_", channel, "_map.png")
     y = colormap(i_p1, jet.colors(256))
     writeImage(y, filename)
     
@@ -118,7 +135,7 @@ for(i in 1:length(images)){
 }
 
 # Save everything so far
-#save.image(file = "CytoPb.RData")
+#save.image(file = global_data_filename)
 
 
 

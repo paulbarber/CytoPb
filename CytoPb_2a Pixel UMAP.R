@@ -15,14 +15,18 @@ library(tidyr)
 option = "High.Marker"  # c("All", "Random", "High.Marker")
 max.n = 10000
 
+
+if(!exists("working_folder")){
+  working_folder <- choose.dir(caption = "Select data folder")
+}
+
 print("Working in:")
-print(getwd())
-print("Enter 'y' to proceed:")
-proceed = readLines(n=1)
-stopifnot(proceed == "y")
+print(working_folder)
+
+global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
 # Read previous session
-load("CytoPb.RData")
+load(global_data_filename)
 
 image <- get(names(images)[1])
 
@@ -88,7 +92,7 @@ names(u) <- c("UMAP1", "UMAP2")
 data2 <- cbind(data, u)
 
 
-pdf("umap_plots.pdf")
+pdf(paste0(working_folder, "/umap_plots.pdf"))
 for(ch in colnames(data)){
   print(ggplot(data2, aes(x = UMAP1, y = UMAP2)) +
     geom_point(aes_string(colour = ch)))
@@ -99,7 +103,7 @@ dev.off()
 # cluster
 cl <- hdbscan(u, minPts = 100)
 
-pdf("pixel_clustering.pdf")
+pdf(paste0(working_folder, "/pixel_clustering.pdf"))
 plot(cl, show_flat = T)   # simpler plot showing most stable clusters
 dev.off()
 
@@ -109,11 +113,11 @@ colnames(data3) <- c(colnames(data), "cluster")
 
 # cluster heatmap
 data3m <- tidyr::gather(as.data.frame(data3), key = "channel", value = "value", colnames(data), factor_key=TRUE)
-pdf("pixel_cluster_heatmap.pdf")
+pdf(paste0(working_folder, "/pixel_cluster_heatmap.pdf"))
 ggplot(data3m, aes(y = cluster, x = channel, fill = value)) +
   geom_tile()
 dev.off()
 
 # Save everything so far
-save.image(file = "CytoPb.RData")
+save.image(file = global_data_filename)
 

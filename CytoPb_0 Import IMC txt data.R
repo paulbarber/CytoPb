@@ -8,7 +8,7 @@ library(imcRtools)
 library(EBImage)
 
 # Image scale
-scale = 1  # um per pixel
+image_scale_umperpixel = 1  # um per pixel
 
 
 if(!exists("working_folder")){
@@ -30,6 +30,7 @@ panel_filename <- paste0(working_folder, "/panel.csv")
 # create output folders
 img_folder <- paste0(working_folder, "/img/")
 dir.create(img_folder, showWarnings = F)
+
 
 
 # Read in the raaw data
@@ -88,7 +89,7 @@ if(length(raw) > 1){
   for(i in 2:length(raw)){
       p <- get(paste0("panel", i))
       if(!identical(p, panel)){
-        filename <- paste0(working_folder, "\panel_", names(raw)[i], ".csv")
+        filename <- paste0(working_folder, "/panel_", names(raw)[i], ".csv")
         write.csv(p, filename, row.names = F)
         all_the_same = FALSE
       }
