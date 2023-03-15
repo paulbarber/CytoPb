@@ -21,8 +21,16 @@ print("Enter 'y' to proceed:")
 proceed = readLines(n=1)
 stopifnot(proceed == "y")
 
+folder <- "celltype_tif"
+dir.create(folder, showWarnings = F)
+
+map_folder <- "celltype_maps"
+dir.create(map_folder, showWarnings = F)
+
 # Read previous session
 #load("CytoPb.RData")
+
+prob_threshold <- 0.5
 
 # Check for cell_type_matrix
 # If not there create a framework and prompt user to fill it in
@@ -53,14 +61,24 @@ if(!file.exists(matrix_filename)){
 }
 
 # Set a colour pallette
-# the #000000 black will be used for unclassified image, remove it when using it for bar plots
+# the #000000 black will be used for unclassified image, will be removed when using it for bar plots
 # Useful website: https://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
 #cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
 #               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-cbPalette <- c("#000000", '#8dd3c7','#ffffb3','#bebada',
-               '#fb8072','#80b1d3','#fdb462','#b3de69',
-               '#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+if(file.exists("cell_type_colours.txt")){
+
+  cb <- read.delim("cell_type_colours.txt", header = F)
+  cbPalette <- c("black", cb$V1) 
+    
+}else{
+  
+  cbPalette <- c("#000000", '#8dd3c7','#ffffb3','#bebada',
+                 '#fb8072','#80b1d3','#fdb462','#b3de69',
+                 '#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+  
+}
+
 
 ct_matrix <- read.csv(matrix_filename, row.names = 1)
 # make sure no spaces in the marker row names
@@ -74,9 +92,6 @@ if(n_cell_types > (length(cbPalette)-1)){
        Add entries to cbPalette in the script.")
 }
 
-folder <- "celltype_tif"
-dir.create(folder, showWarnings = F)
-
 # How to process the cell type maps
 process_os <- function(os, image_name, ct_name){
   
@@ -88,8 +103,8 @@ process_os <- function(os, image_name, ct_name){
   total <- sum(os)
   density <- mean(os)
   
-  area_over_0.5 <- sum(os>0.5)/pixels # threshold
-  os <- ifelse(os > 0.5, os, 0)       # replace <0.5 with zero
+  area_over_0.5 <- sum(os > prob_threshold)/pixels # threshold
+  os <- ifelse(os > prob_threshold, os, 0)       # replace <prob_threshold with zero
   
   total_over_0.5 <- sum(os)
   density_over_0.5 <- mean(os)
@@ -193,7 +208,7 @@ for(i in 1:length(images)){
   max_ct = apply(ct, c(1,2), max)   # what is it's max value
   
   # only allow high probability
-  mask <- max_ct > 0.5
+  mask <- max_ct > prob_threshold
   which_ct <- which_ct * mask
   
   areas <- as.vector(table(factor(which_ct, levels = 0:n_cell_types))) # factor makes sure all cell types are represented
@@ -206,7 +221,7 @@ for(i in 1:length(images)){
   y <- colormap(which_ct/n_cell_types, cbPalette[1:(n_cell_types+1)])
   #display(y)
   
-  filename <- paste0(folder, "/", image_name, "_CellMap.tif") 
+  filename <- paste0(map_folder, "/", image_name, "_CellMap.tif") 
   writeImage(y, filename)
   
   # find average marker strength per cell type
@@ -281,12 +296,12 @@ pdf("Cell Total Plots.pdf")
 #         geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
-# 
-# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-#         geom_bar(stat = "identity") +
-#         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
-# 
+ 
+ print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+         geom_bar(stat = "identity") +
+         scale_fill_manual(values=cbPalette[-1]) +
+         coord_flip())
+ 
 # print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
 #           geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
@@ -309,11 +324,11 @@ print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
 
 # density is the same as total with percentage
 
-# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-#         geom_bar(position = "fill", stat = "identity") +
-#         scale_y_continuous(labels = scales::percent) +
-#         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
+ print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+         geom_bar(position = "fill", stat = "identity") +
+         scale_y_continuous(labels = scales::percent) +
+         scale_fill_manual(values=cbPalette[-1]) +
+         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +

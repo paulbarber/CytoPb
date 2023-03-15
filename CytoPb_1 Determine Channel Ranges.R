@@ -27,7 +27,7 @@ library(ggplot2)
 
 # Set the scale of the blurring in pixels, in tests 3 pixels is best (3 um)
 # Final results are quite insensitive to this. Appearance of cell maps is sensitive.
-sigma = 3
+sigma = ceiling(3 / scale)
 
 # User check of working directory.
 print("Working in:")
@@ -113,7 +113,8 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   
   img2 <- medianFilter(img/max(img), 2)
   img3 <- img2 > otsu(img2, range = c(0, max(img2)))
-  img4 <- opening(img3, kern = makeBrush(7, shape='disc'))  # to determine the foreground
+#  img4 <- opening(img3, kern = makeBrush(7, shape='disc'))  # to determine the foreground
+  img4 <- opening(img3, kern = makeBrush(3, shape='disc'))  # to determine the foreground     **********************
   
   
   image_name <- names(image)[1]
@@ -123,14 +124,17 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   
   # calculate negative and positive image values in the original image units
   # suppressWarnings on max in case there is no foreground
-  posv <- suppressWarnings((mean(img_blur[img4==1])))
+  #posv <- suppressWarnings((mean(img_blur[img4==1])))                              *************************
+  posv <- suppressWarnings((quantile(img_blur[img4==1], 0.05)))    #  percentile, err on the low side
   negv <- suppressWarnings((mean(img_blur[img4==0])))
   
   # If posv comes out 0 (max returns -Inf), there was no foreground = NA
   # If posv comes out NaN (mean returns NaN), there was no foreground = NA
   if(is.nan(posv)) posv = NA
+  else if(is.na(posv)) posv = NA
   else if(posv <= 0) posv = NA
   if(is.nan(negv)) negv = NA
+  else if(is.na(negv)) negv = NA
   else if(negv <= 0) negv = NA
   
   # return
@@ -139,40 +143,33 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
 
 # estimate the negative and positive values for every channel (in panel_keep) of every image
 # write to csv file to check/store, in Excel
-# If table already there then no need to do this
-if(!file.exists("pos_value_table.csv")){
-  image_list <- names(images)
-  b <- rep(" ", dim(panel_keep)[1])
-  pos_table <- data.frame(panel_keep$name, 
-                          panel_keep$image_number, 
-                          matrix(nrow = dim(panel_keep)[1], ncol = length(image_list)))
-  names(pos_table) <- c("Channel", "No.", image_list)
-  neg_table <- pos_table
-  
-  pb = txtProgressBar(min = 0, max = length(images), initial = 0)
-  for(i in 1:length(images)){
-    
-    image_name <- names(images)[i]
-    setTxtProgressBar(pb,i)
-    
-    for(channel in channelNames(images)){
-      
-      vals <- estimateNegPosValue(images[i], channel, sigma = sigma)
-      
-      neg_table[which(neg_table$Channel == channel), image_name] = vals[1] 
-      pos_table[which(pos_table$Channel == channel), image_name] = vals[2] 
-      
-    }
-  }
-  close(pb)
+image_list <- names(images)
+b <- rep(" ", dim(panel_keep)[1])
+pos_table <- data.frame(panel_keep$name, 
+                        panel_keep$image_number, 
+                        matrix(nrow = dim(panel_keep)[1], ncol = length(image_list)))
+names(pos_table) <- c("Channel", "No.", image_list)
+neg_table <- pos_table
 
-  # Write blank files, only if file does not already exist since good work could be overwritten!
-  #if(!file.exists("pos_value_table.csv")) write.csv(pos_table, file = "pos_value_table.csv")
-  #if(!file.exists("neg_value_table.csv")) write.csv(neg_table, file = "neg_value_table.csv")
-  # It is more normal for these files to be always created here, and modified afterwards if required
-  write.csv(pos_table, file = "pos_value_table.csv")
-  write.csv(neg_table, file = "neg_value_table.csv")
+pb = txtProgressBar(min = 0, max = length(images), initial = 0)
+for(i in 1:length(images)){
+  
+  image_name <- names(images)[i]
+  setTxtProgressBar(pb,i)
+  
+  for(channel in channelNames(images)){
+    
+    vals <- estimateNegPosValue(images[i], channel, sigma = sigma)
+    
+    neg_table[which(neg_table$Channel == channel), image_name] = vals[1] 
+    pos_table[which(pos_table$Channel == channel), image_name] = vals[2] 
+    
+  }
 }
+close(pb)
+
+write.csv(pos_table, file = "pos_value_table.csv")
+write.csv(neg_table, file = "neg_value_table.csv")
 
 
 # Save everything so far
