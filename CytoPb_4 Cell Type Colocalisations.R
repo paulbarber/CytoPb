@@ -20,29 +20,34 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 4 Working in:")
 print(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
+# Read previous session
+load(global_data_filename)
+
 # Where to look for all the cell type maps
-in_folder <- paste0(working_folder, "/celltype_tif/")
+in_folder <- objects_folder
 out_folder <- paste0(working_folder, "/colocalisation_output/")
 dir.create(out_folder, showWarnings = F)
 
+# output files
+Colocalisation_table_filename <- paste0(working_folder, "/Colocalisation Table.csv")
+Colocalisation_scale_filename <- paste0(working_folder, "/Colocalisation Scale.pdf")
 
 # Define pairs of cell type to compare in these 2 lists
-first_in_pair <- c("CD4Tcell", "Bcell")
-second_in_pair <- c("Progenitor", "Progenitor")
+first_in_pair <- c("CD20.", "CD20.")
+second_in_pair <- c("CD3.", "CD163.CD68.")
 
 
 library(EBImage)
 library(ggplot2)
 library(strex)
 
-file_list <- list.files(path = in_folder, pattern = "*.tif")
-cell_list <- unique(sub("\\.tif", "", str_after_last(file_list, "_")))
-img_list <- unique(str_before_last(file_list, "_"))
+cell_list <- ct_names
+img_list <- img_names
 
 # make a version of an image at a given scale
 scaleSpace <- function (img, t){
@@ -113,11 +118,14 @@ for (i in 1: length(first_in_pair)){
     ct2 <- second_in_pair[i]
     ct_names <- paste0(ct1, "_", ct2)
     
-    filename1 <- paste0(in_folder, img, "_", ct1, ".tif")
-    filename2 <- paste0(in_folder, img, "_", ct2, ".tif")
-    
-    img1 <- readImage(filename1)
-    img2 <- readImage(filename2)
+    filename <- paste0(in_folder, img, "_celltype_probability_maps.RData")
+
+    load(filename)
+    dim_names <- dimnames(celltype_probability_maps)[[3]]
+    img1 <- celltype_probability_maps[,,which(dim_names == ct1)]
+    img2 <- celltype_probability_maps[,,which(dim_names == ct2)]
+    rm(celltype_probability_maps)
+
     
     sig <- scaleSpaceSignature(img1, img2)
     
@@ -178,13 +186,13 @@ close(pb)
 data <- data.frame(Image, Cell_Type_Pair,
                    Peak_Scale_t, Peak_Scale_sigma, 
                    COM_Scale_t, COM_Scale_sigma, Range_Error)
-write.csv(data, file = "Colocalisation Table.csv", row.names = F)
+write.csv(data, file = Colocalisation_table_filename, row.names = F)
 
 # From previous simulations COM_scale_sigma is linearly proportional to the characteristic separation distance.
 # See: Redefining_Colocalisation_Jan2023
-data <- read.csv(file = "Colocalisation Table.csv")
+data <- read.csv(file = Colocalisation_table_filename)
 
-pdf("Colocalisation Scale.pdf")
+pdf(Colocalisation_scale_filename)
 d <- subset(data, Range_Error == 0)
 print(ggplot(d, aes(x = Image, y = COM_Scale_sigma, fill = Cell_Type_Pair)) +
   geom_bar(stat="identity", position=position_dodge()) +

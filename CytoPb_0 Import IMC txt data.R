@@ -6,6 +6,7 @@
 #BiocManager::install("imcRtools")
 library(imcRtools)
 library(EBImage)
+library(strex)
 
 # Image scale
 image_scale_umperpixel = 1  # um per pixel
@@ -15,7 +16,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 0 Working in:")
 print(working_folder)
 
 # where are the raw txt files
@@ -32,15 +33,18 @@ img_folder <- paste0(working_folder, "/img/")
 dir.create(img_folder, showWarnings = F)
 
 
-
-# Read in the raaw data
-raw <- readImagefromTXT(raw_folder)
+# Get names of raw images
+raw_filenames <- list.files(raw_folder, pattern = "*.txt$", full.names = F)
+#raw_names <- str_before_last_dot(list.files(raw_folder, pattern = "*.txt$", full.names = F))
 
 # Loop over all the files
-for(i in 1:length(raw)){
-  image_name <- names(raw)[i]
+for(i in 1:length(raw_filenames)){
+  # Read in the raw data
+  raw <- readImagefromTXT(raw_folder, pattern = raw_filenames[i])
   
-  img <- raw@listData[[i]]
+  image_name <- names(raw)[1]
+  img <- raw@listData[[1]]
+
   channel <- sub("Di", "", dimnames(img)[[3]])
   
   # There is Target information in the first line of the text file

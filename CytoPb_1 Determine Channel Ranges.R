@@ -22,9 +22,6 @@
 library(cytomapper)
 library(ggplot2)
 
-# REMEMBER TO SET WORKING DIRECTORY
-#setwd("...")
-
 # Set the scale of the blurring in pixels, in tests 3 pixels is best (3 um)
 # Final results are quite insensitive to this. Appearance of cell maps is sensitive.
 if(!exists("image_scale_umperpixel")){
@@ -37,7 +34,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 1 Working in:")
 print(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
@@ -54,8 +51,6 @@ neg_value_filename <- paste0(working_folder, "/neg_value_table.csv")
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
 dir.create(channel_png_folder, showWarnings = F)
-
-
 
 
 # read in channel names
@@ -76,44 +71,14 @@ print(paste("Channels needed for cell identification are:"))
 print(panel_needed)
 sink(file = NULL)
 
-# load images
-images <- loadImages(image_location)
+# Get names of images
+img_filenames <- list.files(image_location, pattern = "*.tif", full.names = T)
+img_names <- str_before_last_dot(list.files(image_location, pattern = "*.tif", full.names = F))
 
-
-# Account for different ways things may have been stored
-# Check number of channels in all images
-nChannels <- vector()
-for(i in 1:length(images)){
-  c <- dim(images[i]@listData[[1]])[3]
-  nChannels <- c(nChannels, c)
-}
-nChannels <- unique(nChannels)
-stopifnot(length(nChannels)==1)
-
-# Check number of rows in panel.csv
+# Get number of rows in panel.csv
 nRows <- dim(panel)[1]
 nKeep <- dim(panel_keep)[1]
 
-# If more entries in the keep panel than the images
-# or if more entries in the images than the keep panel
-if(nKeep > nChannels){
-  stop("There are not enough channels in the images for those in the keep column of panel.csv.")
-} else if(nKeep < nChannels){
-  # All image channels must be identified in the panel
-  if(nRows != nChannels){
-    stop("Image channels are not all or uniquely identified in the panel.csv file.")
-  }
-  
-  # extract the image channels that we need
-  for(i in 1:length(images)){
-    images[i]@listData[[1]] <- images[i]@listData[[1]][,,which(panel$keep==1)]
-  }
-
-}
-# Otherwise the number of image channels must be the keep channels
-
-
-channelNames(images) <- panel_keep$name
 
 # Identify negative and positive channel values
 estimateNegPosValue <- function(image, channel, sigma = 10){
@@ -155,30 +120,55 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   c(negv, posv)
 }
 
+
 # estimate the negative and positive values for every channel (in panel_keep) of every image
 # write to csv file to check/store, in Excel
-image_list <- names(images)
 b <- rep(" ", dim(panel_keep)[1])
 pos_table <- data.frame(panel_keep$name, 
                         panel_keep$image_number, 
-                        matrix(nrow = dim(panel_keep)[1], ncol = length(image_list)))
-names(pos_table) <- c("Channel", "No.", image_list)
+                        matrix(nrow = dim(panel_keep)[1], ncol = length(img_names)))
+names(pos_table) <- c("Channel", "No.", img_names)
 neg_table <- pos_table
 
-pb = txtProgressBar(min = 0, max = length(images), initial = 0)
-for(i in 1:length(images)){
+pb = txtProgressBar(min = 0, max = length(img_filenames), initial = 0)
+for(i in 1:length(img_filenames)){
+
+  images <- loadImages(img_filenames[i])   # will be a list of one image
   
-  image_name <- names(images)[i]
+  # Check number of channels in image
+  nChannels <- dim(images[1]@listData[[1]])[3]
+  
+  # If more entries in the keep panel than the images
+  # or if more entries in the images than the keep panel
+  if(nKeep > nChannels){
+    stop("There are not enough channels in the images for those in the keep column of panel.csv.")
+  } else if(nKeep < nChannels){
+    # All image channels must be identified in the panel
+    if(nRows != nChannels){
+      stop("Image channels are not all or uniquely identified in the panel.csv file.")
+    }
+    
+    # extract the image channels that we need
+    images[i]@listData[[1]] <- images[i]@listData[[1]][,,which(panel$keep==1)]
+
+  }
+  # Otherwise the number of image channels must be the keep channels
+  
+  channelNames(images) <- panel_keep$name
+  
+  image_name <- names(images)[1]
   setTxtProgressBar(pb,i)
   
   for(channel in channelNames(images)){
     
-    vals <- estimateNegPosValue(images[i], channel, sigma = sigma)
+    vals <- estimateNegPosValue(images[1], channel, sigma = sigma)
     
     neg_table[which(neg_table$Channel == channel), image_name] = vals[1] 
     pos_table[which(pos_table$Channel == channel), image_name] = vals[2] 
     
   }
+  
+  rm(images)
 }
 close(pb)
 
@@ -187,5 +177,5 @@ write.csv(neg_table, file = neg_value_filename)
 
 
 # Save everything so far
-#save.image(file = global_data_filename)
+save.image(file = global_data_filename)
 

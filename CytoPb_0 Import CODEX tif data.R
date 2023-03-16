@@ -9,14 +9,14 @@ library(cytomapper)
 library(strex)
 
 # Image scale
-image_scale_umperpixel = 0.37744  # um per pixel
-#image_scale_umperpixel = 0.75488  # um per pixel in the montage files
+#image_scale_umperpixel = 0.37744  # um per pixel
+image_scale_umperpixel = 0.75488  # um per pixel in the montage files
 
 if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 0 Working in:")
 print(working_folder)
 
 # where are the raw tif files
@@ -34,9 +34,9 @@ img_folder <- paste0(working_folder, "/img/")
 dir.create(img_folder, showWarnings = F)
 
 
-
-# Load raw images
-raw <- loadImages(raw_folder)
+# Get names of raw images
+raw_filenames <- list.files(raw_folder, pattern = "*.tif", full.names = T)
+#raw_names <- str_before_last_dot(list.files(raw_folder, pattern = "*.tif", full.names = F))
 
 # read in the channel names
 cn <- read.delim(channelNames_filename, header = F)
@@ -60,23 +60,27 @@ panel$keep <- keep
 panel$description <- channel_descriptions
 
 # Loop over all the files
-for(i in 1:length(raw)){
-  image_name <- names(raw)[i]
+pb = txtProgressBar(min = 0, max = length(raw_filenames), initial = 0)
+for(i in 1:length(raw_filenames)){
   
-  img <- raw@listData[[i]]
+  # Load raw images
+  raw <- loadImages(raw_filenames[i])
+  image_name <- names(raw)[1]
+  img <- raw@listData[[1]]
+  
+  setTxtProgressBar(pb,i)
 
   # Save the channels to keep in a tiff in the img folder
   filename <- paste0(img_folder, image_name, ".tiff")
   img_keep <- img[,,(keep==1)]
   writeImage(img_keep, filename, bits.per.sample = 16)
   # NB these are 16bit images
+  rm(raw)
 }
+close(pb)
 
 # write the panel file
 write.csv(panel, panel_filename, row.names = F)
-
-# remove this large object from the environment
-rm(raw)
 
 print("If your image names are long, now is a good time to shorten them.")
 

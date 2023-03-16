@@ -20,7 +20,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 2a Working in:")
 print(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
@@ -28,7 +28,13 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 # Read previous session
 load(global_data_filename)
 
-image <- get(names(images)[1])
+# Get some channel probability data  # retrieve channel probability 
+filename <- paste0(objects_folder, 
+                   image_name, 
+                   "_channel_probability_maps.RData")
+load(filename)
+image <- channel_probability_maps
+rm(channel_probability_maps)
 
 if(option == "All" | option == "Random"){  # Form matrix of all data
   

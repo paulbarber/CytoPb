@@ -17,31 +17,26 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 2 Working in:")
 print(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
-# image and panel file locations
-image_location <- paste0(working_folder, "/img")
-panel_location <- paste0(working_folder, "/panel.csv")
+# Read previous session
+load(global_data_filename)
 
 # File locations
-channel_list_filename <- paste0(working_folder, "/Channel Lists.txt")
-pos_value_filename <- paste0(working_folder, "/pos_value_table.csv")
-neg_value_filename <- paste0(working_folder, "/neg_value_table.csv")
 pos_value_plot_filename <- paste0(working_folder, "/Positive Value Plot.pdf")
 
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
 dir.create(channel_png_folder, showWarnings = F)
 
+# folder for R objects
+objects_folder <- paste0(working_folder, "/objects/")
+dir.create(objects_folder, showWarnings = F)
 
-
-# Read previous session
-#load(global_data_filename)
-
-# Read in pos and neg values
+# Read in pos and neg values, user may have tweaked them from last script
 pos_table <- read.csv(pos_value_filename)
 neg_table <- read.csv(neg_value_filename)
 
@@ -62,45 +57,46 @@ print(ggplot(d, aes(Channel, Image, fill = log10(positive.value))) +
 dev.off()
 
 # Channel images and density plots
-
-# Create some names in the environment for the EBImage stacks of probability maps
-for(i in 1:length(images)){
-  assign(names(images)[i], NULL)
-}
-
-pb = txtProgressBar(min = 0, max = length(channels_needed), initial = 0)
-for(j in 1:length(channels_needed)){
+pb = txtProgressBar(min = 0, max = length(img_filenames)*length(channels_needed), initial = 0)
+for(i in 1:length(img_filenames)){
   
-  # Channel of interest
-  channel <- channels_needed[j]
-  setTxtProgressBar(pb,j)
+  images <- loadImages(img_filenames[i])   # will be a list of one image
+  image_name <- names(images)[1]
   
-  for(i in 1:length(images)){
+  # set dim names for the images
+  dimnames(images@listData[[1]])[[3]] <- channels_needed
+  
+  # somewhere to store the maps for this image
+  channel_probability_maps = NULL
+
+  for(j in 1:length(channels_needed)){
     
-    image_name <- names(images)[i]
-
-    i_p1 <- images@listData[[i]][,,channel]
-
+    setTxtProgressBar(pb,(i-1)*length(channels_needed) + j)
+    
+    # Channel of interest
+    channel <- channels_needed[j]
+    i_p1 <- images@listData[[1]][,,channel]
+  
     # Get scaling parameters, ## log10 these to apply to log10 then gblured data
     table_name <- make.names(image_name)   # to match table col
     nv1 <- neg_table[which(neg_table$Channel == channel), table_name]
     pv1 <- pos_table[which(pos_table$Channel == channel), table_name]
-
+    
     # Check these values, if nv is NA set to 0, if pv is NA set to large number (>65k for 16 bit IMC)
     if(is.na(nv1)) nv1 = 0
     if(is.na(pv1)) {
       pv1 = 100000
     }
-
+    
     # Write a png of the channel for convenience
     # I cannot get EBImage to write a nice image out! This is the best I can do.
     # It uses png::writePNG
     filename <- paste0(channel_png_folder, image_name, "_", channel, ".png")
     writeImage(i_p1*256, filename)
-
+    
     # blur to account for cell size/position uncertainties
     i_p1 <- gblur(i_p1, sigma = sigma)
-
+    
     # re-scale 0-1 to get an estimate of the probability of being positive.
     i_p1 <- (i_p1 - nv1)/(pv1 - nv1)
     
@@ -118,24 +114,28 @@ for(j in 1:length(channels_needed)){
     writeImage(y, filename)
     
     # Store these probability maps for later use, in order as channels_needed
-    l <- get(image_name)
-    l <- combine(l, i_p1)
-    assign(image_name, l)
-    
+    channel_probability_maps <- combine(channel_probability_maps, i_p1)
+
   }
+  
+  rm(images)
+  rm(y)
+  rm(i_p1)
+  
+  # set dim names for collections of marker maps
+  dimnames(channel_probability_maps)[[3]] <- channels_needed
+  
+  filename <- paste0(objects_folder, 
+                     image_name, 
+                     "_channel_probability_maps.RData")
+  
+  save(channel_probability_maps, file = filename)
+  rm(channel_probability_maps)
 }
 close(pb)
-
-
-# set dim names for collections of marker maps
-for(i in 1:length(images)){
-  l <- get(names(images)[i])
-  dimnames(l)[[3]] <- channels_needed
-  assign(names(images)[i], l)
-}
-
+    
 # Save everything so far
-#save.image(file = global_data_filename)
+save.image(file = global_data_filename)
 
 
 

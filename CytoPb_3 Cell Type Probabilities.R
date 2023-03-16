@@ -18,10 +18,13 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("Working in:")
+print("CytoPb 3 Working in:")
 print(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
+
+# Read previous session
+load(global_data_filename)
 
 # File locations
 matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
@@ -32,17 +35,17 @@ CellTypeTotals_filename <- paste0(working_folder, "/CellTypeTotals.csv")
 CellTotalPlotsfilename <- paste0(working_folder, "/Cell Total Plots.pdf")
 
 # folder to save images to
-celltype_tif_folder <- paste0(working_folder, "/celltype_tif/")
-dir.create(celltype_tif_folder, showWarnings = F)
+celltype_png_folder <- paste0(working_folder, "/celltype_png/")
+dir.create(celltype_png_folder, showWarnings = F)
 celltype_map_folder <- paste0(working_folder, "/celltype_maps/")
 dir.create(celltype_map_folder, showWarnings = F)
 
 
+# Set the high probability threshold, but allow it to be predefined differently
+if(!exists("prob_threshold")){
+  prob_threshold = 0.5
+}
 
-# Read previous session
-#load(global_data_filename)
-
-prob_threshold <- 0.5
 
 # Check for cell_type_matrix
 # If not there create a framework and prompt user to fill it in
@@ -106,8 +109,10 @@ if(n_cell_types > (length(cbPalette)-1)){
 # How to process the cell type maps
 process_os <- function(os, image_name, ct_name){
   
-  filename <- paste0(celltype_tif_folder, "/", image_name, "_", ct_name, ".tif") 
-  writeImage(os, filename)
+  filename <- paste0(celltype_png_folder, "/", image_name, "_", ct_name, ".png") 
+  y = colormap(os, jet.colors(256))
+  writeImage(y, filename)
+  rm(y)
   
   pixels <- length(os)
   
@@ -135,10 +140,6 @@ area_highProb <- vector()
 max_prob_area <- vector()
 max_prob_area_perc <- vector()
 
-# Create some names in the environment for the EBImage stacks of probability maps
-for(i in 1:length(images)){
-  assign(paste0(names(images)[i], "_ct"), NULL)
-}
 
 addToGlobalArrays <- function(ct_name, image_name, scores){
   ct_names <<- c(ct_names, ct_name)
@@ -154,13 +155,24 @@ addToGlobalArrays <- function(ct_name, image_name, scores){
 
 ############# Define cell types in this loop ######################
 
-pb = txtProgressBar(min = 0, max = length(images), initial = 0)
-for(i in 1:length(images)){
+pb = txtProgressBar(min = 0, max = length(img_names), initial = 0)
+for(i in 1:length(img_names)){
   
-  image_name <- names(images)[i]
-  l <- get(image_name)
+  image_name <- img_names[i]
+  
+  # somewhere to store the maps for this image
+  celltype_probability_maps = NULL
+  
+  # retrieve channel probability 
+  filename <- paste0(objects_folder, 
+                     image_name, 
+                     "_channel_probability_maps.RData")
+  load(filename)
+  l <- channel_probability_maps
+  rm(channel_probability_maps)
+
   setTxtProgressBar(pb,i)
-  
+
   for(j in 1:n_cell_types){  # cell types
     
     ct_name <- names(ct_matrix)[j]
@@ -191,28 +203,51 @@ for(i in 1:length(images)){
 
     addToGlobalArrays(ct_name, image_name, scores)
     
-    ct <- get(paste0(names(images)[i], "_ct"))
-    ct <- combine(ct, os)
-    assign(paste0(names(images)[i], "_ct"), ct)
+    # Store these probability maps for later use
+    celltype_probability_maps <- combine(celltype_probability_maps, os)
     
   }
+  
+  # set dim names for collections of marker maps
+  dimnames(celltype_probability_maps)[[3]] <- names(ct_matrix)
+  
+  filename <- paste0(objects_folder, 
+                     image_name, 
+                     "_celltype_probability_maps.RData")
+  
+  save(celltype_probability_maps, file = filename)
+  rm(celltype_probability_maps)
+  
 }
 close(pb)
 
-# set dim names for collections of cell type maps
-for(i in 1:length(images)){
-  ct <- get(paste0(names(images)[i], "_ct"))
-  dimnames(ct)[[3]] <- names(ct_matrix)
-  assign(paste0(names(images)[i], "_ct"), ct)
-}
+rm(os)
+rm(i_p)
+rm(l)
+
 
 # Make images of most likely cell type per pixel
 mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed), data = 0)
 pdf(markerpercellbyimage_filename)
-pb = txtProgressBar(min = 0, max = length(images), initial = 0)
-for(i in 1:length(images)){
-  ct <- get(paste0(names(images)[i], "_ct"))
-  image_name <- names(images)[i]
+pb = txtProgressBar(min = 0, max = length(img_filenames), initial = 0)
+for(i in 1:length(img_filenames)){
+  
+  # load the image we need
+  images <- loadImages(img_filenames[i])   # will be a list of one image
+  image_name <- names(images)[1]
+  
+  # set dim names for the images
+  dimnames(images@listData[[1]])[[3]] <- channels_needed
+  
+  # load the cell type prob map we need
+  filename <- paste0(objects_folder, 
+                     image_name, 
+                     "_celltype_probability_maps.RData")
+
+  load(filename)
+  ct <- celltype_probability_maps
+  rm(celltype_probability_maps)
+    
   setTxtProgressBar(pb,i)
   
   which_ct = apply(ct, c(1,2), which.max)  # which kind of cell is the max
@@ -234,12 +269,13 @@ for(i in 1:length(images)){
   
   filename <- paste0(celltype_map_folder, "/", image_name, "_CellMap.tif") 
   writeImage(y, filename)
+  rm(y)
   
   # find average marker strength per cell type
   strength_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed))
   colnames(strength_per_ct) <- channels_needed
   rownames(strength_per_ct) <- names(ct_matrix)
-  img <- images@listData[[i]]   # all channels for this image
+  img <- images@listData[[1]]   # all channels for this image
   for(j in 1:n_cell_types){
     # mask for this cell type
     mask <- which_ct == j
@@ -275,8 +311,16 @@ for(i in 1:length(images)){
 dev.off()
 close(pb)
 
+rm(images)
+rm(ct)
+rm(ch)
+rm(img)
+rm(which_ct)
+rm(mask)
+rm(max_ct)
+
 # Finish the calculation of mean marker strength per cell type
-mean_per_ct <- mean_per_ct / length(images)
+mean_per_ct <- mean_per_ct / length(img_filenames)
 mean_per_ct <- as.data.frame(mean_per_ct)
 
 data <- data.frame(image_names, ct_names, 
@@ -378,4 +422,4 @@ print(ggplot(d, aes(CellType, Channel, fill = Mean)) +
 dev.off()
 
 # Save everything so far
-#save.image(file = global_data_filename)
+save.image(file = global_data_filename)
