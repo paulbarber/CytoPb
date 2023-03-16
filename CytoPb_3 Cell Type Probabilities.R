@@ -114,13 +114,13 @@ process_os <- function(os, image_name, ct_name){
   total <- sum(os)
   density <- mean(os)
   
-  area_over_0.5 <- sum(os > prob_threshold)/pixels # threshold
+  area_highProb <- sum(os > prob_threshold)/pixels # threshold
   os <- ifelse(os > prob_threshold, os, 0)       # replace <prob_threshold with zero
   
-  total_over_0.5 <- sum(os)
-  density_over_0.5 <- mean(os)
+  total_highProb <- sum(os)
+  density_highProb <- mean(os)
   
-  c(pixels, total, density, total_over_0.5, density_over_0.5, area_over_0.5)
+  c(pixels, total, density, total_highProb, density_highProb, area_highProb)
 }
 
 # Storage variable arrays
@@ -129,9 +129,9 @@ image_names <- vector()
 pixels <- vector()
 total <- vector()
 density <- vector()
-total_over_0.5 <- vector()
-density_over_0.5 <- vector()
-area_over_0.5 <- vector()
+total_highProb <- vector()
+density_highProb <- vector()
+area_highProb <- vector()
 max_prob_area <- vector()
 max_prob_area_perc <- vector()
 
@@ -146,9 +146,9 @@ addToGlobalArrays <- function(ct_name, image_name, scores){
   pixels <<- c(pixels, scores[1])
   total <<- c(total, scores[2])
   density <<- c(density, scores[3])
-  total_over_0.5 <<- c(total_over_0.5, scores[4])
-  density_over_0.5 <<- c(density_over_0.5, scores[5])
-  area_over_0.5 <<- c(area_over_0.5, scores[6])
+  total_highProb <<- c(total_highProb, scores[4])
+  density_highProb <<- c(density_highProb, scores[5])
+  area_highProb <<- c(area_highProb, scores[6])
 }
 
 
@@ -281,12 +281,12 @@ mean_per_ct <- as.data.frame(mean_per_ct)
 
 data <- data.frame(image_names, ct_names, 
                    total, density, 
-                   total_over_0.5, density_over_0.5, area_over_0.5,
+                   total_highProb, density_highProb, area_highProb,
                    max_prob_area, max_prob_area_perc)
 
 names(data) <- c("Image", "CellType", 
                  "Total", "Density", 
-                 "Total_over_0.5", "Density_over_0.5", "Area_over_0.5",
+                 "Total_highProb", "Density_highProb", "Area_highProb",
                 "Max_probability_area", "Max_probability_area_percentage")
 
 write.csv(data, file = CellTypeTotals_filename, row.names = F)
@@ -313,17 +313,17 @@ pdf(CellTotalPlotsfilename)
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
  
-# print(ggplot(d, aes(x = Image, y = Total_over_0.5, fill = CellType)) +
+# print(ggplot(d, aes(x = Image, y = Total_highProb, fill = CellType)) +
 #           geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
 
-print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
+print(ggplot(d, aes(x = Image, y = Density_highProb, fill = CellType)) +
           geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
-# print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
+# print(ggplot(d, aes(x = Image, y = Area_highProb, fill = CellType)) +
 #         geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
@@ -341,13 +341,13 @@ print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
 
-print(ggplot(d, aes(x = Image, y = Density_over_0.5, fill = CellType)) +
+print(ggplot(d, aes(x = Image, y = Density_highProb, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
         coord_flip())
 
-# print(ggplot(d, aes(x = Image, y = Area_over_0.5, fill = CellType)) +
+# print(ggplot(d, aes(x = Image, y = Area_highProb, fill = CellType)) +
 #         geom_bar(position = "fill", stat = "identity") +
 #         scale_y_continuous(labels = scales::percent) +
 #         scale_fill_manual(values=cbPalette[-1]) +
