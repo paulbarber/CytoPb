@@ -12,6 +12,7 @@
 # a -1 indicates channel should be negative. Empty or NA indicates 
 # we do not care about that channel.
 
+library(cytomapper)
 library(ggplot2)
 
 if(!exists("working_folder")){
@@ -42,8 +43,11 @@ dir.create(celltype_map_folder, showWarnings = F)
 
 
 # Set the high probability threshold, but allow it to be predefined differently
-if(!exists("prob_threshold")){
+if(!exists("probability_threshold")){
   prob_threshold = 0.5
+}else{
+  prob_threshold = probability_threshold
+  rm(probability_threshold)   # this stops in going into global_data_filename and being overwritten if changed and rerun
 }
 
 
@@ -91,6 +95,20 @@ if(file.exists(cell_type_colours_filename)){
                  '#fb8072','#80b1d3','#fdb462','#b3de69',
                  '#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
   
+}
+
+# Check colours are valid since it is annoying to get an error later on
+areColors <- function(x) {
+  sapply(x, function(X) {
+    tryCatch(is.matrix(col2rgb(X)), 
+             error = function(e) FALSE)
+  })
+}
+
+colours_valid <- areColors(cbPalette)
+if(!all(colours_valid)){
+  print(colours_valid)
+  stop("Some provided colours are not valid R colours.")
 }
 
 
@@ -352,10 +370,10 @@ pdf(CellTotalPlotsfilename)
 #         scale_fill_manual(values=cbPalette[-1]) +
 #         coord_flip())
  
-# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-#         geom_bar(stat = "identity") +
-#         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
+ print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+         geom_bar(stat = "identity") +
+         scale_fill_manual(values=cbPalette[-1]) +
+         coord_flip())
  
 # print(ggplot(d, aes(x = Image, y = Total_highProb, fill = CellType)) +
 #           geom_bar(stat = "identity") +
@@ -379,11 +397,11 @@ print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
 
 # density is the same as total with percentage
 
-# print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
-#         geom_bar(position = "fill", stat = "identity") +
-#         scale_y_continuous(labels = scales::percent) +
-#         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
+ print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
+         geom_bar(position = "fill", stat = "identity") +
+         scale_y_continuous(labels = scales::percent) +
+         scale_fill_manual(values=cbPalette[-1]) +
+         coord_flip())
 
 print(ggplot(d, aes(x = Image, y = Density_highProb, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
