@@ -50,6 +50,7 @@ keep <- rep(1, length(channel_names))
 keep[grep("blank", channel_names)] <- 0
 keep[grep("empty", channel_names)] <- 0
 keep[grep("HOECHST", channel_names)] <- 0
+keep[grep("HOCHST", channel_names)] <- 0   # sometimes misspelled
 keep[1] <- 1  # the first HOECHST channel
 
 # make the panel.csv table
@@ -69,6 +70,12 @@ for(i in 1:length(raw_filenames)){
   img <- raw@listData[[1]]
   
   setTxtProgressBar(pb,i)
+  
+  # check the channel numbers
+  nChannels <- dim(img)[3]
+  if(nChannels != length(keep)){
+    stop("Number of channels in the images and ChannelNames do not match.")
+  }
 
   # Save the channels to keep in a tiff in the img folder
   filename <- paste0(img_folder, image_name, ".tiff")
