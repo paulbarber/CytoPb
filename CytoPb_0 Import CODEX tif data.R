@@ -89,6 +89,10 @@ close(pb)
 # write the panel file
 write.csv(panel, panel_filename, row.names = F)
 
+rm(img)
+rm(img_keep)
+
+
 print("If your image names are long, now is a good time to shorten them.")
 
 # Example image renaming, modify it for your needs and run shorten_image_names()
