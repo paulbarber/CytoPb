@@ -21,6 +21,7 @@
 
 library(cytomapper)
 library(ggplot2)
+library(strex)
 
 # Set the scale of the blurring in pixels, in tests 3 pixels is best (3 um)
 # Final results are quite insensitive to this. Appearance of cell maps is sensitive.
@@ -47,6 +48,7 @@ panel_location <- paste0(working_folder, "/panel.csv")
 channel_list_filename <- paste0(working_folder, "/Channel Lists.txt")
 pos_value_filename <- paste0(working_folder, "/pos_value_table.csv")
 neg_value_filename <- paste0(working_folder, "/neg_value_table.csv")
+pos_value_plot_filename <- paste0(working_folder, "/Positive Value Plot.pdf")
 
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
@@ -172,8 +174,41 @@ for(i in 1:length(img_filenames)){
 }
 close(pb)
 
+
+# Calculate global levels from all the images
+# Mean level from neg values
+neg_table$global <- rowMeans(neg_table[,4:dim(neg_table)[2]], na.rm = TRUE)
+# For pos table, try to get lower of the values where staining is good
+# ie those above the mid point (t)
+# range will be invariant to the proportion of images with good staining
+# using min should temper any big outliers
+p <- pos_table[,4:dim(pos_table)[2]]
+mn <- apply(p, 1, min, na.rm = T)
+mx <- apply(p, 1, max, na.rm = T)
+t <- (mn + mx)/2
+pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
+rm(p, mn, mx, t)
+
+
+# SNR plot from positive values
+d <- tidyr::gather(pos_table, Image, positive.value, 4:dim(pos_table)[2], factor_key=TRUE)
+
+d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
+d$Image <- as.character(d$Image)
+
+pdf(pos_value_plot_filename)
+print(ggplot(d, aes(Channel, Image, fill = log10(positive.value))) + 
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+              legend.position = "none"))
+dev.off()
+
+
+
+
 write.csv(pos_table, file = pos_value_filename)
 write.csv(neg_table, file = neg_value_filename)
+
 
 
 # Save everything so far
