@@ -80,9 +80,12 @@ for(i in 1:length(img_filenames)){
       
     }
     
-    # Check these values, if nv is NA set to 0, if pv is NA set to large number (>65k for 16 bit IMC)
+    # Check these values, if nv is NA set to 0, if pv is NA set to global value
     if(is.na(nv1)) nv1 = 0
     if(is.na(pv1)) {
+      pv1 = pos_table[which(pos_table$Channel == channel), "global"]
+    }
+    if(is.na(pv1)) {   # final check
       pv1 = 100000
     }
     
