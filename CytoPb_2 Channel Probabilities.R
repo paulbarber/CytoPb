@@ -25,9 +25,6 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 # Read previous session
 load(global_data_filename)
 
-# File locations
-pos_value_plot_filename <- paste0(working_folder, "/Positive Value Plot.pdf")
-
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
 dir.create(channel_png_folder, showWarnings = F)
@@ -40,21 +37,16 @@ dir.create(objects_folder, showWarnings = F)
 pos_table <- read.csv(pos_value_filename)
 neg_table <- read.csv(neg_value_filename)
 
+# Are we going to use the global pos and neg values, or individuals for each image?
+if(!exists("use_global_ranges")){
+  use_global = TRUE
+}else{
+  use_global = use_global_ranges
+  rm(use_global_ranges)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+}
+
 # Blue to red pallette
 jet.colors = colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
-
-# SNR plot from positive values
-d <- tidyr::gather(pos_table, Image, positive.value, 4:dim(pos_table)[2], factor_key=TRUE)
-
-d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
-d$Image <- as.character(d$Image)
-
-pdf(pos_value_plot_filename)
-print(ggplot(d, aes(Channel, Image, fill = log10(positive.value))) + 
-  geom_tile() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-        legend.position = "none"))
-dev.off()
 
 # Channel images and density plots
 pb = txtProgressBar(min = 0, max = length(img_filenames)*length(channels_needed), initial = 0)
@@ -77,10 +69,16 @@ for(i in 1:length(img_filenames)){
     channel <- channels_needed[j]
     i_p1 <- images@listData[[1]][,,channel]
   
-    # Get scaling parameters, ## log10 these to apply to log10 then gblured data
-    table_name <- make.names(image_name)   # to match table col
-    nv1 <- neg_table[which(neg_table$Channel == channel), table_name]
-    pv1 <- pos_table[which(pos_table$Channel == channel), table_name]
+    # Get scaling parameters
+    if(use_global){
+      nv1 <- neg_table[which(neg_table$Channel == channel), "global"]     
+      pv1 <- pos_table[which(pos_table$Channel == channel), "global"]     
+    }else{
+      table_name <- make.names(image_name)   # to match table col
+      nv1 <- neg_table[which(neg_table$Channel == channel), table_name]
+      pv1 <- pos_table[which(pos_table$Channel == channel), table_name]
+      
+    }
     
     # Check these values, if nv is NA set to 0, if pv is NA set to large number (>65k for 16 bit IMC)
     if(is.na(nv1)) nv1 = 0
