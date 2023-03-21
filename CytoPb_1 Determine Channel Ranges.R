@@ -92,14 +92,17 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   img <- image@listData[[1]][,,channel]
   img_blur <- gblur(img, sigma = sigma) # to get the final intensity from
   
-  img2 <- medianFilter(img/max(img), 2)
-  img3 <- img2 > otsu(img2, range = c(0, max(img2)))
+  img2 <- medianFilter(normalize(img), 2)
+  
+#  img3 <- img2 > otsu(img2, range = c(0, max(img2)))
+  img3 <- normalize(img2) > 0.5
+  
 #  img4 <- opening(img3, kern = makeBrush(7, shape='disc'))  # to determine the foreground
 #  img4 <- opening(img3, kern = makeBrush(3, shape='disc'))  # to determine the foreground     **********************
   
   img4 <- bwlabel(img3)   # label 4-connected particles
   t <- table(img4)    # sizes of particles
-  o <- names(t)[t<100]   # get list of small objects
+  o <- names(t)[t<10]   # get list of small objects
   img4 <- rmObjects(img4, o)    # remove small objects, fg is left
   rm(t, o)
   
