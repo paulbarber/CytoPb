@@ -39,7 +39,7 @@ neg_table <- read.csv(neg_value_filename)
 
 # Are we going to use the global pos and neg values, or individuals for each image?
 if(!exists("use_global_ranges")){
-  use_global = TRUE
+  use_global = FALSE
 }else{
   use_global = use_global_ranges
   rm(use_global_ranges)   # this stops in going into global_data_filename and being overwritten if changed and rerun
@@ -80,14 +80,34 @@ for(i in 1:length(img_filenames)){
       
     }
     
+    # do some checks against the global positive value
+    g <- pos_table[which(pos_table$Channel == channel), "global"]
+    
     # Check these values, if nv is NA set to 0, if pv is NA set to global value
     if(is.na(nv1)) nv1 = 0
     if(is.na(pv1)) {
-      pv1 = pos_table[which(pos_table$Channel == channel), "global"]
+      pv1 = g
     }
     if(is.na(pv1)) {   # final check
       pv1 = 100000
     }
+    
+    # Check for fg>bg
+    if(pv1<nv1) {
+      pv1 = g
+      if(pv1<nv1) {
+        nv1 = 0
+        if(pv1<nv1) {
+          pv1 = 100000
+        }
+      }
+    }
+    
+    # if pos is << global value, channel or fg segmentation must have failed
+    if(pv1 < g/10) {
+      pv1 = g
+    }
+    
     
     # Write a png of the channel for convenience
     # I cannot get EBImage to write a nice image out! This is the best I can do.
