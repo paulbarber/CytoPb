@@ -10,7 +10,8 @@ working_folder <- choose.dir(caption = "Select data folder")
 
 # Specify options
 image_scale_umperpixel = 0.75488  # um per pixel, default is 1
-prob_threshold = 0.25   # Threshold for "high probability", default is 0.5
+#probability_threshold = 0.5   # Threshold for "high probability", default is 0.5 (in 3)
+use_global_ranges = FALSE   # can use a global range for each channel or individual for each image, default is FALSE
 
 # Choose which processing to do
 source("CytoPb_1 Determine Channel Ranges.R")
