@@ -191,10 +191,15 @@ neg_table$global <- rowMeans(neg_table[,4:dim(neg_table)[2]], na.rm = TRUE)
 # range will be invariant to the proportion of images with good staining
 # using min should temper any big outliers
 p <- pos_table[,4:dim(pos_table)[2]]
-mn <- apply(p, 1, min, na.rm = T)
-mx <- apply(p, 1, max, na.rm = T)
-t <- (mn + mx)/2
-pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
+#mn <- apply(p, 1, min, na.rm = T)
+#mx <- apply(p, 1, max, na.rm = T)
+#t <- (mn + mx)/2
+#pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
+
+# OR assume all pos values are good (since fg is strict) and take the mean or something
+#pos_table$global <- rowMeans(pos_table[,4:dim(pos_table)[2]], na.rm = TRUE)             ####################### 
+pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)
+
 rm(p, mn, mx, t)
 
 
