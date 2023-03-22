@@ -82,6 +82,9 @@ for(i in 1:length(img_filenames)){
     
     # do some checks against the global positive value
     g <- pos_table[which(pos_table$Channel == channel), "global"]
+    if(is.na(g)){
+      g = 100000
+    }
     
     # Check these values, if nv is NA set to 0, if pv is NA set to global value
     if(is.na(nv1)) nv1 = 0
@@ -127,7 +130,7 @@ for(i in 1:length(img_filenames)){
     
     # Use Sigmoid instead of clamping, bigger f is steeper slope
     # Will ensure 0-1 without sharp cutoff
-    f = 5
+    f = 10
     i_p1 <- 1/(1+exp(-f*(i_p1-0.5)))
     
     filename <- paste0(channel_png_folder, image_name, "_", channel, "_map.png")
