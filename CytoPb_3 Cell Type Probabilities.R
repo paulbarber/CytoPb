@@ -32,6 +32,7 @@ matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
 cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
 markerpercellbyimage_filename <- paste0(working_folder, "/Marker per CellType by image.pdf")
 markerpercell_filename <- paste0(working_folder, "/Marker per CellType.pdf")
+markerpercelltable_filename <- paste0(working_folder, "/Marker per CellType.csv")
 CellTypeTotals_filename <- paste0(working_folder, "/CellTypeTotals.csv")
 CellTotalPlotsfilename <- paste0(working_folder, "/Cell Total Plots.pdf")
 
@@ -246,6 +247,7 @@ rm(l)
 
 # Make images of most likely cell type per pixel
 mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed), data = 0)
+mean_per_ct_table <- data.frame()
 pdf(markerpercellbyimage_filename)
 pb = txtProgressBar(min = 0, max = length(img_filenames), initial = 0)
 for(i in 1:length(img_filenames)){
@@ -311,6 +313,10 @@ for(i in 1:length(img_filenames)){
   
   mean_per_ct <- strength_per_ct + mean_per_ct
   
+  spc <- as.data.frame(strength_per_ct)
+  spc$Image <- image_name
+  mean_per_ct_table <- rbind(mean_per_ct_table, spc)
+  
   # heatmap plot of expressions versus cell type per image
   m <- scale(strength_per_ct)
   m <- as.data.frame(m)
@@ -340,6 +346,9 @@ rm(max_ct)
 # Finish the calculation of mean marker strength per cell type
 mean_per_ct <- mean_per_ct / length(img_filenames)
 mean_per_ct <- as.data.frame(mean_per_ct)
+
+# Write full table of marker per cell type
+write.csv(mean_per_ct_table, file = markerpercelltable_filename, row.names = F)
 
 data <- data.frame(image_names, ct_names, 
                    total, density, 
