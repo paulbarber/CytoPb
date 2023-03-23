@@ -183,28 +183,36 @@ for(i in 1:length(img_filenames)){
 close(pb)
 
 
-# Calculate global levels from all the images
-# Mean level from neg values
-neg_table$global <- rowMeans(neg_table[,4:dim(neg_table)[2]], na.rm = TRUE)
-# For pos table, try to get lower of the values where staining is good
-# ie those above the mid point (t)
-# range will be invariant to the proportion of images with good staining
-# using min should temper any big outliers
-p <- pos_table[,4:dim(pos_table)[2]]
-#mn <- apply(p, 1, min, na.rm = T)
-#mx <- apply(p, 1, max, na.rm = T)
-#t <- (mn + mx)/2
-#pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
+if(length(img_filenames) > 1){
+  # Calculate global levels from all the images
+  # Mean level from neg values
+  neg_table$global <- rowMeans(neg_table[,3:dim(neg_table)[2]], na.rm = TRUE)
+  # For pos table, try to get lower of the values where staining is good
+  # ie those above the mid point (t)
+  # range will be invariant to the proportion of images with good staining
+  # using min should temper any big outliers
+  p <- pos_table[,3:dim(pos_table)[2]]
+  #mn <- apply(p, 1, min, na.rm = T)
+  #mx <- apply(p, 1, max, na.rm = T)
+  #t <- (mn + mx)/2
+  #pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
+  
+  # OR assume all pos values are good (since fg is strict) and take the mean or something
+  #pos_table$global <- rowMeans(pos_table[,3:dim(pos_table)[2]], na.rm = TRUE)             ####################### 
+  pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)
 
-# OR assume all pos values are good (since fg is strict) and take the mean or something
-#pos_table$global <- rowMeans(pos_table[,4:dim(pos_table)[2]], na.rm = TRUE)             ####################### 
-pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)
+} else {  # only 1 image
+  neg_table$global <- neg_table[,3]
+  pos_table$global <- pos_table[,3]
+}
+
+
 
 rm(p, mn, mx, t)
 
 
 # SNR plot from positive values
-d <- tidyr::gather(pos_table, Image, positive.value, 4:dim(pos_table)[2], factor_key=TRUE)
+d <- tidyr::gather(pos_table, Image, positive.value, 3:dim(pos_table)[2], factor_key=TRUE)
 
 d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
 d$Image <- as.character(d$Image)
@@ -219,8 +227,8 @@ dev.off()
 
 
 
-write.csv(pos_table, file = pos_value_filename)
-write.csv(neg_table, file = neg_value_filename)
+write.csv(pos_table, file = pos_value_filename, row.names = F)
+write.csv(neg_table, file = neg_value_filename, row.names = F)
 
 
 
