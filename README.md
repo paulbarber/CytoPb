@@ -13,7 +13,13 @@ Clone or download the repository files. Set your R working directory to the sour
 
 Check the folder of "example_input_files". panel.csv may be automatically created by one of the import scripts (Script 0). "cell_type_matrix.csv" defines the cell type of interest by positive (1) and negative (-1) marker channels. "cell_type_colours.txt" is an optional file to define the colours to use for the cell types.
 
-Script 0 will expect a "raw" folder of raw data within that directory. The scripts work mainly with stacked tiff files which will and should be placed in an "img" folder. Use each script in turn. Read the comments at the top of each script about what the inputs and outputs are.
+Script 0 is data import. It will expect a "raw" folder of raw data within that directory. The scripts work mainly with stacked tiff files which will and should be placed in an "img" folder. Use each script in turn. Read the comments at the top of each script about what the inputs and outputs are.
+
+Scripts 1, 2 and 3 run through producing the cell type probability maps. After script 2 you can check the channel png folder to see if reasonable positive marker areas have been identified. If not, the pos_value_table.csv file can be adjusted manually (decrease the value to assign more positive signal in this channel).
+
+Script 2a is unfinished, but may allow for exploratory analysis by clustering pixels into cell type clusters.
+
+Script 4 will measure colocalisation between pairs of cell types as defined within the script using a scale space approach.
 
 ## How to cite
 
