@@ -318,6 +318,7 @@ for(i in 1:length(img_filenames)){
   
   spc <- as.data.frame(strength_per_ct)
   spc$Image <- image_name
+  spc$cellType <- names(ct_matrix)
   mean_per_ct_table <- rbind(mean_per_ct_table, spc)
   
   # heatmap plot of expressions versus cell type per image
