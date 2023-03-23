@@ -9,7 +9,11 @@ This method copes with all the complex marker patterns usually used in immunolog
 
 ## Quick start instructions
 
-Clone or download the repository files. Set your R working directory to the location of your data. Script 0 will expect a "raw" folder of raw data within that directory. The scripts work mainly with stacked tiff files which will and should be placed in an "img" folder. Use each script in turn. Read the comments at the top of each script about what the inputs and outputs are.
+Clone or download the repository files. Set your R working directory to the source code location. Copy "CytoPb_RUN ALL.R" to your data folder and modify it as required for the scripts to run and required options.
+
+Check the folder of "example_input_files". panel.csv may be automatically created by one of the import scripts (Script 0). "cell_type_matrix.csv" defines the cell type of interest by positive (1) and negative (-1) marker channels. "cell_type_colours.txt" is an optional file to define the colours to use for the cell types.
+
+Script 0 will expect a "raw" folder of raw data within that directory. The scripts work mainly with stacked tiff files which will and should be placed in an "img" folder. Use each script in turn. Read the comments at the top of each script about what the inputs and outputs are.
 
 ## How to cite
 
