@@ -104,8 +104,11 @@ if(length(raw) > 1){
   }
 }
 
+# remove all the unwanted panel files
+rm(list = ls(pattern = "panel+[0-9]"))
+
 # remove this large object from the environment
-rm(raw)
+rm(raw, img_keep)
 
 print("If your image names are long, now is a good time to shorten them.")
 
