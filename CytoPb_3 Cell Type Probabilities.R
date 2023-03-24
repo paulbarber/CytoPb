@@ -375,38 +375,50 @@ data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 #d <- subset(data, CellType != "CD4Tcell")
 d <- data
 
+# reduce text size when number of images is large
+n_images <- length(img_names)
+rel_size = 1
+if(n_images > 50){
+  rel_size = 50/n_images
+}
 
 pdf(CellTotalPlotsfilename)
 
 # print(ggplot(d, aes(x = Image, y = Total, fill = CellType)) +
 #         geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
- 
+#         coord_flip() +
+#         theme(axis.text.y = element_text(size = rel(rel_size))))
+
  print(ggplot(d, aes(x = Image, y = Density, fill = CellType)) +
          geom_bar(stat = "identity") +
          scale_fill_manual(values=cbPalette[-1]) +
-         coord_flip())
+         coord_flip() +
+         theme(axis.text.y = element_text(size = rel(rel_size))))
  
 # print(ggplot(d, aes(x = Image, y = Total_highProb, fill = CellType)) +
 #           geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
-
+#         coord_flip() +
+#         theme(axis.text.y = element_text(size = rel(rel_size))))
+ 
 print(ggplot(d, aes(x = Image, y = Density_highProb, fill = CellType)) +
           geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
-        coord_flip())
+        coord_flip() +
+        theme(axis.text.y = element_text(size = rel(rel_size))))
 
 # print(ggplot(d, aes(x = Image, y = Area_highProb, fill = CellType)) +
 #         geom_bar(stat = "identity") +
 #         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
+#         coord_flip() +
+#         theme(axis.text.y = element_text(size = rel(rel_size))))
 
 print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values=cbPalette[-1]) +
-        coord_flip())
+        coord_flip() +
+        theme(axis.text.y = element_text(size = rel(rel_size))))
 
 # density is the same as total with percentage
 
@@ -414,25 +426,29 @@ print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
          geom_bar(position = "fill", stat = "identity") +
          scale_y_continuous(labels = scales::percent) +
          scale_fill_manual(values=cbPalette[-1]) +
-         coord_flip())
+         coord_flip() +
+         theme(axis.text.y = element_text(size = rel(rel_size))))
 
 print(ggplot(d, aes(x = Image, y = Density_highProb, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
-        coord_flip())
+        coord_flip() +
+        theme(axis.text.y = element_text(size = rel(rel_size))))
 
 # print(ggplot(d, aes(x = Image, y = Area_highProb, fill = CellType)) +
 #         geom_bar(position = "fill", stat = "identity") +
 #         scale_y_continuous(labels = scales::percent) +
 #         scale_fill_manual(values=cbPalette[-1]) +
-#         coord_flip())
+#         coord_flip() +
+#         theme(axis.text.y = element_text(size = rel(rel_size))))
 
 print(ggplot(d, aes(x = Image, y = Max_probability_area, fill = CellType)) +
         geom_bar(position = "fill", stat = "identity") +
         scale_y_continuous(labels = scales::percent) +
         scale_fill_manual(values=cbPalette[-1]) +
-        coord_flip())
+        coord_flip() +
+        theme(axis.text.y = element_text(size = rel(rel_size))))
 
 dev.off()
 
