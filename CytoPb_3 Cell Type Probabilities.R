@@ -290,7 +290,7 @@ for(i in 1:length(img_filenames)){
   y <- colormap(which_ct/n_cell_types, cbPalette[1:(n_cell_types+1)])
   #display(y)
   
-  filename <- paste0(celltype_map_folder, "/", image_name, "_CellMap.tif") 
+  filename <- paste0(celltype_map_folder, "/", image_name, "_CellMap.png") 
   writeImage(y, filename)
   rm(y)
   
