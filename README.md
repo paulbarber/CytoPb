@@ -23,6 +23,29 @@ Script 2a is unfinished, but may allow for exploratory analysis by clustering pi
 
 Script 4 will measure colocalisation between pairs of cell types as defined within the script using a scale space approach.
 
+## Outputs
+
+* celltype_maps
+Images of the most likely cell type at each pixel. Cell type colours will correspond to those in the Cell Total Plots pdf file.
+
+* Cell Total Plots.pdf and csv
+Satcked bar graphs of the total probability, probability density (normalised to image area) and area occupied in the cell type map (most likely cell type per pixel). Raw data behind the Cell Total Plots is in the csv file.
+
+* celltype_png
+Images of the cell type probability for every cell type and every image.
+
+* channel_png
+Images of the channel probability of positivity for every marker (channel) of every image.
+
+* objects folder
+A folder of R objects (cytomapper image lists) that contain the raw data behind the celltype_png and channel_png images. For follow on processing.
+
+* Marker per CellType pdfs and csv
+The raw marker expressions behind the pixels of the celltype_maps. Demonstrates which markers tend to be higher for each cell type compared to the other defined cell types (note, not compared to all pixels. There may be other cell types, not defined in the cell type matrix that have higher expressions).
+
+* Positive Value Plot.pdf
+A qualitative heatmap of the channel intensities defined to be marker positive (as defined in pos_value_plot.csv). Here is a visual check of which markers have high levels and those which may have failed or have no content.
+
 ## How to cite
 
 Please cite the repository URL (https://github.com/paulbarber/CytoPb). There are no publications associated with the code yet. 
