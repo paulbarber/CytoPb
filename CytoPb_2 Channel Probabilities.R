@@ -11,6 +11,16 @@
 
 library(ggplot2)
 
+# -------- OPTIMISATION OPTION --------
+# To test the positive value for a particular channel and/or image
+# insert those here, and then only those options will be run for a quick check.
+# Output will be in channel_png_TEST folder.
+# When you are done checking, make sure to remove the names and (set as ""), 
+# and run this script in full.
+# These can be set outside this script.
+#use_global_ranges <- TRUE   # can make sure which pos value we are using
+#TEST_specific_channel <- "CD68"
+#TEST_specific_image <- "Leap24_ROI_001"
 
 
 if(!exists("working_folder")){
@@ -27,6 +37,10 @@ load(global_data_filename)
 
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
+if(exists("TEST_specific_image") | exists("TEST_specific_channel")){  # For TEST options
+  print("WARNING: Specific images or channels are being tested")
+  channel_png_folder <- paste0(working_folder, "/channel_png_TEST/")
+}
 dir.create(channel_png_folder, showWarnings = F)
 
 # folder for R objects
@@ -39,7 +53,7 @@ neg_table <- read.csv(neg_value_filename)
 
 # Are we going to use the global pos and neg values, or individuals for each image?
 if(!exists("use_global_ranges")){
-  use_global = FALSE
+  use_global = TRUE
 }else{
   use_global = use_global_ranges
   rm(use_global_ranges)   # this stops in going into global_data_filename and being overwritten if changed and rerun
@@ -51,6 +65,13 @@ jet.colors = colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F",
 # Channel images and density plots
 pb = txtProgressBar(min = 0, max = length(img_filenames)*length(channels_needed), initial = 0)
 for(i in 1:length(img_filenames)){
+  
+  # If we have set a specific image to test, and this is not that image, continue to next
+  if(exists("TEST_specific_image")){
+    if(TEST_specific_image != img_names[i]){
+      next  
+    }
+  } 
   
   images <- loadImages(img_filenames[i])   # will be a list of one image
   image_name <- names(images)[1]
@@ -64,6 +85,13 @@ for(i in 1:length(img_filenames)){
   for(j in 1:length(channels_needed)){
     
     setTxtProgressBar(pb,(i-1)*length(channels_needed) + j)
+    
+    # If we have set a specific channel to test, and this is not that channel, continue to next
+    if(exists("TEST_specific_channel")){
+      if(TEST_specific_channel != channels_needed[j]){
+        next  
+      }
+    } 
     
     # Channel of interest
     channel <- channels_needed[j]
@@ -146,20 +174,27 @@ for(i in 1:length(img_filenames)){
   rm(y)
   rm(i_p1)
   
-  # set dim names for collections of marker maps
-  dimnames(channel_probability_maps)[[3]] <- channels_needed
-  
-  filename <- paste0(objects_folder, 
-                     image_name, 
-                     "_channel_probability_maps.RData")
-  
-  save(channel_probability_maps, file = filename)
+  if(!exists("TEST_specific_image") & !exists("TEST_specific_channel")){  # For TEST options don't save
+    # set dim names for collections of marker maps
+    dimnames(channel_probability_maps)[[3]] <- channels_needed
+    
+    filename <- paste0(objects_folder, 
+                       image_name, 
+                       "_channel_probability_maps.RData")
+    
+    save(channel_probability_maps, file = filename)
+  }
   rm(channel_probability_maps)
 }
 close(pb)
     
-# Save everything so far
-save.image(file = global_data_filename)
+if(!exists("TEST_specific_image") & !exists("TEST_specific_channel")){  # For TEST options don't save
+  # Save everything so far
+  save.image(file = global_data_filename)
+}
 
+# Remove test options so they need to be explicitly set on each run
+if(exists("TEST_specific_image")) rm(TEST_specific_image)
+if(exists("TEST_specific_channel")) rm(TEST_specific_channel)
 
 
