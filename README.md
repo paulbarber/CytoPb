@@ -29,7 +29,7 @@ Script 4 will measure colocalisation between pairs of cell types as defined with
 Images of the most likely cell type at each pixel. Cell type colours will correspond to those in the Cell Total Plots pdf file.
 
 ### Cell Total Plots.pdf and csv
-Stacked bar graphs of the total probability, probability density (normalised to image area) and area occupied in the cell type map (most likely cell type per pixel). Raw data behind the Cell Total Plots is in the csv file.
+Stacked bar graphs of the probability density (normalised to image area) and area occupied in the cell type map (most likely cell type per pixel) for all pixel probabilities and those higher than the threshold (default is 0.1) to exclude areas which have a low probability of being a cell. "Density_highProb" is usually the best indicator of cell types within an image. Raw data behind the Cell Total Plots is in the csv file, also including the total probabilities per image for comparison with data that has not been normalised to image area (eg cell counts).
 
 ### celltype_png
 Images of the cell type probability for every cell type and every image.
