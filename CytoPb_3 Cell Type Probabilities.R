@@ -186,12 +186,7 @@ for(i in 1:length(img_names)){
   celltype_probability_maps = NULL
   
   # retrieve channel probability 
-  filename <- paste0(objects_folder, 
-                     image_name, 
-                     "_channel_probability_maps.RData")
-  load(filename)
-  l <- channel_probability_maps
-  rm(channel_probability_maps)
+  l <- loadChannelMapObject(image_name)
 
   setTxtProgressBar(pb,i)
 
@@ -230,14 +225,7 @@ for(i in 1:length(img_names)){
     
   }
   
-  # set dim names for collections of marker maps
-  dimnames(celltype_probability_maps)[[3]] <- names(ct_matrix)
-  
-  filename <- paste0(objects_folder, 
-                     image_name, 
-                     "_celltype_probability_maps.RData")
-  
-  save(celltype_probability_maps, file = filename)
+  saveCellTypeMapObject(celltype_probability_maps, image_name, names(ct_matrix))
   rm(celltype_probability_maps)
   
 }
@@ -263,14 +251,8 @@ for(i in 1:length(img_filenames)){
   dimnames(images@listData[[1]])[[3]] <- channels_needed
   
   # load the cell type prob map we need
-  filename <- paste0(objects_folder, 
-                     image_name, 
-                     "_celltype_probability_maps.RData")
+  ct <- loadCellTypeMapObject(image_name)
 
-  load(filename)
-  ct <- celltype_probability_maps
-  rm(celltype_probability_maps)
-    
   setTxtProgressBar(pb,i)
   
   which_ct = apply(ct, c(1,2), which.max)  # which kind of cell is the max

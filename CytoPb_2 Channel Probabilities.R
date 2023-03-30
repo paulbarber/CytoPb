@@ -11,6 +11,9 @@
 
 library(ggplot2)
 
+# source all the helper functions
+sapply(list.files("R", pattern = "*.R"), source)
+
 # -------- OPTIMISATION OPTION --------
 # To test the positive value for a particular channel and/or image
 # insert those here, and then only those options will be run for a quick check.
@@ -51,6 +54,9 @@ dir.create(objects_folder, showWarnings = F)
 pos_table <- read.csv(pos_value_filename)
 neg_table <- read.csv(neg_value_filename)
 
+# Plot this again in case it has changed
+plotPosValues(pos_table, pos_value_plot_filename)
+
 # Are we going to use the global pos and neg values, or individuals for each image?
 if(!exists("use_global_ranges")){
   use_global = TRUE
@@ -59,7 +65,7 @@ if(!exists("use_global_ranges")){
   rm(use_global_ranges)   # this stops in going into global_data_filename and being overwritten if changed and rerun
 }
 
-# Blue to red pallette
+# Blue to red palette
 jet.colors = colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
 
 # Channel images and density plots
@@ -175,14 +181,7 @@ for(i in 1:length(img_filenames)){
   rm(i_p1)
   
   if(!exists("TEST_specific_image") & !exists("TEST_specific_channel")){  # For TEST options don't save
-    # set dim names for collections of marker maps
-    dimnames(channel_probability_maps)[[3]] <- channels_needed
-    
-    filename <- paste0(objects_folder, 
-                       image_name, 
-                       "_channel_probability_maps.RData")
-    
-    save(channel_probability_maps, file = filename)
+    saveChannelMapObject(channel_probability_maps, image_name, channels_needed)
   }
   rm(channel_probability_maps)
 }
