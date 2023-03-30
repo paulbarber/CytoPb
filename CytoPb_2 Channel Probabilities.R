@@ -12,7 +12,7 @@
 library(ggplot2)
 
 # source all the helper functions
-sapply(list.files("R", pattern = "*.R"), source)
+sapply(list.files("R", pattern = "*.R", full.names = T), source)
 
 # -------- OPTIMISATION OPTION --------
 # To test the positive value for a particular channel and/or image

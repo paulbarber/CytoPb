@@ -42,8 +42,6 @@ if(!exists("working_folder")){
 print("CytoPb 1 Working in:")
 print(working_folder)
 
-source("R/globals.R")
-
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
 # image and panel file locations
