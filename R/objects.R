@@ -11,7 +11,7 @@ celltype_probability_maps_name <- "celltype_probability_maps"
 saveChannelMapObject <- function(channel_probability_maps, image_name, channel_names){
   
   # set dim names for collections of marker maps
-  dimnames(channel_probability_maps)[[3]] <- channels_needed
+  dimnames(channel_probability_maps)[[3]] <- channel_names
   
   filename <- paste0(objects_folder, 
                    image_name, 
