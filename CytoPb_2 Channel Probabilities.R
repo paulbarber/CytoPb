@@ -9,6 +9,7 @@
 # output: scaled and map images to channel_png
 # Save the complete workspace for follow on scripts.
 
+library(cytomapper)
 library(ggplot2)
 
 # source all the helper functions
