@@ -92,10 +92,15 @@ if(file.exists(cell_type_colours_filename)){
     
 }else{
   
-  # A nice pallette
-  cbPalette <- c("#000000", '#8dd3c7','#ffffb3','#bebada',
-                 '#fb8072','#80b1d3','#fdb462','#b3de69',
-                 '#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+  # A nice palette
+#  cbPalette <- c("#000000", '#8dd3c7','#ffffb3','#bebada',
+#                 '#fb8072','#80b1d3','#fdb462','#b3de69',
+#                 '#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+  
+  # A brighter palette
+  cbPalette <- c('#000000', '#a6cee3','#1f78b4','#b2df8a','#33a02c',
+                 '#fb9a99','#e31a1c','#fdbf6f','#ff7f00',
+                 '#cab2d6','#6a3d9a','#ffff99','#b15928')
   
 }
 
@@ -125,7 +130,7 @@ if(n_cell_types > (length(cbPalette)-1)){
   print("Not enough colours provided for the cell types requested.
        You can add entries to a cell_type_colours.txt file. Meanwhile,
         a rainbow pallette will be used.")
-  cbPalette <- c("#000000", rainbow(n_cell_types+1))
+  cbPalette <- c("#000000", rainbow(n_cell_types+2))
 }
 
 # How to process the cell type maps
