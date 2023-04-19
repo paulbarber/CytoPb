@@ -6,37 +6,48 @@
 # Sum would be used for traditional binning of image data.
 # Will work with arrays but will turn them into images on return.
 
-x <- array(1:25, dim = c(5,5))
-x <- array(1:512, dim = c(16,16,2))
+library(EBImage)
 
-binMatrixBy2 <- function(x, fun = sum){
+#x <- array(1:25, dim = c(5,5))
+#x <- array(1:512, dim = c(16,12,2))
+
+# Calculate the size of the new image if we bin by a certain amount
+newBinDim <- function(x, bin_size = 2){
+  
+  d1 <- dim(x)[1]
+  d2 <- dim(x)[2]
+  
+  #c(d1 - d1%%bin_size, d2 - d2%%bin_size) # the image size we can process
+  c(floor(d1/bin_size), floor(d2/bin_size)) # the size of the result
+}
+
+binMatrix <- function(x, fun = sum, bin_size = 2){
   # x is a matrix (2D)
   
-  # If odd dimensions drop first row or col
-  if((dim(x)[1] %% 2) != 0) {  # odd
-    x <- x[-dim(x)[1],]
-  }
+  # Make sure size is divisible by the bin size
+  binned_dim <- newBinDim(x, bin_size = bin_size)
+  new_dim <- binned_dim * bin_size
+    
+  # truncate
+  x <- x[1:new_dim[1], 1:new_dim[2]]
   
-  if((dim(x)[2] %% 2) != 0) {  # odd
-    x <- x[,-dim(x)[2]]
-  }
-  
-  
-  # reshape adding 2 extra dimensions of size 2
+  # reshape adding 2 extra dimensions of size bin_size
   # then apply fun along these dimensions
   # NB apply with simplify=TRUE will drop the summed dimension
-  dim(x) <- c(2, dim(x)[1]/2, 2, dim(x)[2]/2)
+  dim(x) <- c(bin_size, binned_dim[1], bin_size, binned_dim[2])
   apply(apply(x, c(2,3,4), fun), c(1,3), fun)
 }
 
-binImageBy2 <- function(x, fun = sum){
+binImage <- function(x, fun = sum, bin_size = 2){
   # x is a matrix, or a set with many channels in a 3rd dimension.
+
+  binned_dim <- newBinDim(x, bin_size = bin_size)
   
   if(length(dim(x)) == 2){
-    y <- binMatrixBy2(x, fun = fun)
+    y <- binMatrix(x, fun = fun, bin_size = bin_size)
   } else {
-    y <- apply(x, 3, binMatrixBy2, fun = fun)
-    dim(y) <- c(floor(dim(x)[1]/2), floor(dim(x)[2]/2), dim(x)[3])
+    y <- apply(x, 3, binMatrix, fun = fun, bin_size = bin_size)
+    dim(y) <- c(binned_dim[1], binned_dim[2], dim(x)[3])
   }
   
   y <- Image(y)
@@ -46,15 +57,3 @@ binImageBy2 <- function(x, fun = sum){
   
   y
 }
-
-
-binImage <- function(x, fun = sum, bin_size = 2){
-  
-  while (bin_size > 1) {
-    x <- binImageBy2(x, fun = fun)
-    bin_size = bin_size / 2
-  }
-  
-  x
-}
-
