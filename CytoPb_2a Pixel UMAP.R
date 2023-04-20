@@ -148,10 +148,10 @@ for(i in 1:length(img_names)){
   # cluster heatmap
   data3m <- tidyr::gather(as.data.frame(data3), key = "channel", value = "value", colnames(data), factor_key=TRUE)
   pdf(paste0(clustering_folder, image_name, "_pixel_cluster_heatmap.pdf"))
-  ggplot(data3m, aes(y = cluster, x = channel, fill = value)) +
+  print(ggplot(data3m, aes(y = cluster, x = channel, fill = value)) +
     geom_tile() + 
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-          legend.position = "none")
+          legend.position = "none") )
   dev.off()
 
 
