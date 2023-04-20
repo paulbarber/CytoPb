@@ -28,9 +28,9 @@ if(!exists("neighborhood_grid_size_um")){   # c("All", "Random", "High.Marker")
 # Select the images to process, doing all together may be too much
 # UMAP takes a while
 # hdbscan clustering takes a while and needs lots of memory
-#images_to_process <- img_names   # Process all images
+images_to_process <- img_names   # Process all images
 #images_to_process <- img_names[1]
-images_to_process <- img_names[35]
+#images_to_process <- img_names[35]
 
 
 
@@ -39,7 +39,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-cat(paste("CytoPb 5 Working in:", working_folder))
+cat(paste("CytoPb 5 Working in:", working_folder, "\n"))
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
@@ -59,7 +59,7 @@ regions_per_image <- NULL
 region_d1_per_image <- NULL
 region_d2_per_image <- NULL
 
-cat("Collecting region data for all images...")
+cat("Collecting region data for all images...\n")
 pb = txtProgressBar(min = 0, max = length(images_to_process), initial = 0)
 for(i in 1:length(images_to_process)){
   
@@ -103,7 +103,7 @@ custom.settings$n_components=2
 custom.settings$random_state=42
 
 
-cat(paste("Performing UMAP with", dim(data)[1], "regions..."))
+cat(paste("Performing UMAP with", dim(data)[1], "regions...\n"))
 data.umap <- umap(data, config = custom.settings, fast_sgd=T)
 
 
@@ -111,7 +111,7 @@ u <- as.data.frame(data.umap$layout)
 names(u) <- c("UMAP1", "UMAP2")
 data2 <- cbind(data, u)
 
-cat("Saving UMAPs per cell type...")
+cat("Saving UMAPs per cell type...\n")
 pb = txtProgressBar(min = 0, max = length(colnames(data)), initial = 0)
 pdf(paste0(clustering_folder, "neighborhood_celltype_umap_plots.pdf"))
 i=1
@@ -125,14 +125,14 @@ dev.off()
 close(pb)
 
 
-cat("Clustering...")
+cat("Clustering...\n")
 # minPts is min cluster size BUT also a smoothing factor!
 # Cluster the UMAP plot
 #cl <- hdbscan(u, minPts = 5)
 # OR Cluster the data
 cl <- hdbscan(data, minPts = 5)
 
-cat("Saving plots...")
+cat("Saving plots...\n")
 
 # NB Cluster labels start at ZERO, but 0 are "noise points"!!!!!
 

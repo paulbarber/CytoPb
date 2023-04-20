@@ -38,7 +38,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-cat(paste("CytoPb 2b Working in:", working_folder))
+cat(paste("CytoPb 2b Working in:", working_folder, "\n"))
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
@@ -58,7 +58,7 @@ regions_per_image <- NULL
 region_d1_per_image <- NULL
 region_d2_per_image <- NULL
 
-cat("Collecting region data for all images...")
+cat("Collecting region data for all images...\n")
 pb = txtProgressBar(min = 0, max = length(images_to_process), initial = 0)
 for(i in 1:length(images_to_process)){
   
@@ -105,7 +105,7 @@ custom.settings$n_components=2
 custom.settings$random_state=42
 
 
-cat(paste("Performing UMAP with", dim(data)[1], "regions..."))
+cat(paste("Performing UMAP with", dim(data)[1], "regions...\n"))
 data.umap <- umap(data, config = custom.settings, fast_sgd=T)
 
 
@@ -127,12 +127,12 @@ dev.off()
 close(pb)
   
   
-cat("Clustering...")
+cat("Clustering...\n")
 # minPts is min cluster size BUT also a smoothing factor!
 #cl <- hdbscan(u, minPts = 5)
 cl <- hdbscan(data, minPts = 5)
 
-cat("Saving plots...")
+cat("Saving plots...\n")
 
 # NB Cluster labels start at ZERO, but 0 are "noise points"!!!!!
 
