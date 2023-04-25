@@ -60,7 +60,7 @@ scaleSpace <- function (img, t){
   
   w <- makeBrush(size = size, shape = 'gaussian', sigma = sigma)
   
-  filter2(img, w, boundary = "circular")
+  filter2(img, w, boundary = 0)
 
 }
 

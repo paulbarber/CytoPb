@@ -8,7 +8,7 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   
   # Get EBImage
   img <- image@listData[[1]][,,channel]
-  img_blur <- gblur(img, sigma = sigma) # to get the final intensity from
+  img_blur <- gblur(img, sigma = sigma, boundary = 0) # to get the final intensity from
   
   img2 <- medianFilter(normalize(img), 2)
   

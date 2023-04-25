@@ -154,7 +154,7 @@ for(i in 1:length(img_filenames)){
     #writeImage(i_p1*256, filename)
     
     # blur to account for cell size/position uncertainties
-    i_p1 <- gblur(i_p1, sigma = sigma)
+    i_p1 <- gblur(i_p1, sigma = sigma, boundary = 0)
     
     filename <- paste0(channel_png_folder, image_name, "_", channel, ".png")
     writeImage(normalize(i_p1), filename)
