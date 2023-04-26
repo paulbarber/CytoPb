@@ -48,6 +48,7 @@ images_to_process <- img_names   # Process all images
 #images_to_process <- img_names[35]
 
 
+max_colours_for_legend = 50
 
 grid_size = grid_um/image_scale_umperpixel
 
@@ -162,7 +163,7 @@ cat("kmeans clustering...\n")
 # Cluster the UMAP plot
 #cl <- kmeans(u, 20)
 # OR Cluster the data
-cl <- kmeans(data, 10)
+cl <- kmeans(data, 50)
 
 
 nClusters = max(cl$cluster)
@@ -208,7 +209,7 @@ ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
         scale_colour_manual(values=cbPalette[-1]) +
         guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
 
-if(nClusters > 20){
+if(nClusters > max_colours_for_legend){
   print(ggp1 + theme(legend.position = "none"))
 } else {
   print(ggp1)
@@ -221,7 +222,7 @@ if(min(clusters)==0){
           ggtitle("Noise pixels omitted") +
           guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
   
-  if(nClusters > 20){
+  if(nClusters > max_colours_for_legend){
     print(ggp2 + theme(legend.position = "none"))
   } else {
     print(ggp2)
@@ -424,7 +425,7 @@ ggp4 <- ggplot(d, aes(x = Image, y = Density, fill = Cluster)) +
         coord_flip() +
         theme(axis.text.y = element_text(size = rel(rel_size)))
 
-if(nClusters > 20){
+if(nClusters > max_colours_for_legend){
   print(ggp1 + theme(legend.position = "none"))
   print(ggp2 + theme(legend.position = "none"))
   print(ggp3 + theme(legend.position = "none"))
