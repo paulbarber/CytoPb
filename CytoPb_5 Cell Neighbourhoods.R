@@ -25,14 +25,6 @@ if(!exists("neighborhood_grid_size_um")){   # c("All", "Random", "High.Marker")
   rm(neighborhood_grid_size_um)   # this stops in going into global_data_filename and being overwritten if changed and rerun
 }
 
-# Select the images to process, doing all together may be too much
-# UMAP takes a while
-# hdbscan clustering takes a while and needs lots of memory
-images_to_process <- img_names   # Process all images
-#images_to_process <- img_names[1]
-#images_to_process <- img_names[35]
-
-
 
 
 if(!exists("working_folder")){
@@ -45,6 +37,17 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
 # Read previous session
 load(global_data_filename)
+
+
+
+# Select the images to process, doing all together may be too much
+# UMAP takes a while
+# hdbscan clustering takes a while and needs lots of memory
+images_to_process <- img_names   # Process all images
+#images_to_process <- img_names[1]
+#images_to_process <- img_names[35]
+
+
 
 grid_size = grid_um/image_scale_umperpixel
 
@@ -80,9 +83,11 @@ for(i in 1:length(images_to_process)){
   
   # Different binning functions
   # We are binning the cell type probabilities
-  #fun <- sum   # Account for area of each cell type and strength
-  #fun <- mean  # all areas are the same so should be the same as sum
-  fun <- max   # The strongest probability in each area for each type
+  # These are like area and seem to be the best
+  fun <- sum   # Account for area of each cell type and strength
+  #fun <- mean  # all regions are the same size, so should be the same as sum
+  # These are like cell presence?
+  #fun <- max   # The strongest probability in each area for each type
     
   d <- binImage(image, fun, bin_size = grid_size)
   d <- d@.Data
@@ -136,35 +141,56 @@ dev.off()
 close(pb)
 
 
-##cat("hdbscan clustering...\n")
-# minPts is min cluster size BUT also a smoothing factor!
-#minPts = ceiling(max(4, dim(data)[1]/500))   # some estimate
+#cat("hdbscan clustering...\n")
+## minPts is min cluster size BUT also a smoothing factor!
+##minPts = ceiling(max(4, dim(data)[1]/500))   # some estimate
 ##minPts = 30
-# Cluster the UMAP plot
-#cl <- hdbscan(u, minPts = minPts)
-# OR Cluster the data
+#minPts = 10
+## Cluster the UMAP plot
+#cl <- hdbscan(u, minPts = minPts, verbose = T)
+## OR Cluster the data
 ##cl <- hdbscan(data, minPts = minPts, verbose = T)
-# NB Cluster labels start at ZERO, but 0 are "noise points"!!!!!
-##cat(paste0("Number of noise pixels: ", sum(cl$cluster==0), " (", 
-##          100*sum(cl$cluster==0)/length(cl$cluster), "%)\n"))
-
-##pdf(paste0(clustering_folder, "neighborhood_clustering.pdf"))
-##plot(cl, show_flat = T)   # simpler plot showing most stable clusters
-##dev.off()
+## NB Cluster labels start at ZERO, but 0 are "noise points"!!!!!
+#cat(paste0("Number of noise pixels: ", sum(cl$cluster==0), " (", 
+#          round(100*sum(cl$cluster==0)/length(cl$cluster)), "%)\n"))
+#pdf(paste0(clustering_folder, "neighborhood_clustering.pdf"))
+#plot(cl, show_flat = T)   # simpler plot showing most stable clusters
+#dev.off()
 
 
 cat("kmeans clustering...\n")
-cl <- kmeans(data, 20)
+# Cluster the UMAP plot
+#cl <- kmeans(u, 20)
+# OR Cluster the data
+cl <- kmeans(data, 10)
 
 
 nClusters = max(cl$cluster)
 clusters <- cl$cluster
 
+# reorder the clusters putting similar ones together
+# Similarity is based on cell type content
+# so collect and aggregate this data first
+# remove cluster 0 if there is one
+data3 <- cbind(data, clusters)
+colnames(data3) <- c(colnames(data), "cluster")
+
+data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
+data3la <- aggregate(value ~ cluster + channel, data = data3l, mean)
+data3w <- tidyr::pivot_wider(data3la, names_from = channel, values_from = value)
+data3ws <- as.data.frame(sapply(subset(data3w, cluster!=0), scale))  # remove cluster 0
+data3ws$cluster <- 1:nClusters  # don't want cluster label scaled
+
+cl.cl <- hclust(dist(as.matrix(data3ws[,2:dim(data3ws)[2]])))
+cl_order <- cl.cl$order
+
+# reorder for all regions
+for(i in 1:nClusters){   # make sure to exclude cluster 0 here
+  clusters[cl$cluster == cl_order[i]] <- i
+}
+
 
 cat("Saving plots...\n")
-
-# cluster colours
-cbPalette <- c("#000000", rainbow(nClusters+2))
 
 data3 <- cbind(data, clusters)
 colnames(data3) <- c(colnames(data), "cluster")
@@ -172,23 +198,34 @@ data4 <- cbind(data2, clusters)
 colnames(data4)[length(colnames(data4))] <- "cluster"
 data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 
+# cluster colours
+cbPalette <- c("#000000", rainbow(nClusters+2))
+
 
 pdf(paste0(clustering_folder, "neighborhood_cluster_umap_plot.pdf"))
 ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
         geom_point(aes(colour = cluster), size = 1, alpha = 0.05) +
-        scale_colour_manual(values=cbPalette[-1])
-
-ggp2 <- ggplot(subset(data4, !is.na(cluster)), aes(x = UMAP1, y = UMAP2)) +
-        geom_point(aes(colour = cluster), size = 1, alpha = 0.05) +
         scale_colour_manual(values=cbPalette[-1]) +
-        ggtitle("Noise pixels omitted")
+        guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
 
 if(nClusters > 20){
   print(ggp1 + theme(legend.position = "none"))
-  print(ggp2 + theme(legend.position = "none"))
 } else {
   print(ggp1)
-  print(ggp2)
+}
+
+if(min(clusters)==0){
+  ggp2 <- ggplot(subset(data4, !is.na(cluster)), aes(x = UMAP1, y = UMAP2)) +
+          geom_point(aes(colour = cluster), size = 1, alpha = 0.05) +
+          scale_colour_manual(values=cbPalette[-1]) +
+          ggtitle("Noise pixels omitted") +
+          guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
+  
+  if(nClusters > 20){
+    print(ggp2 + theme(legend.position = "none"))
+  } else {
+    print(ggp2)
+  }
 }
 
 dev.off()
@@ -216,35 +253,65 @@ print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
         geom_tile() + 
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
               legend.position = "none") +
-        ggtitle("z scaled") )
+        ggtitle("mean z scaled") )
 
 # NB data is already scaled above, get better contrast in the heatmap
-# if we use the default to scale by rows
+# if we use the default to scale by rows as well
 heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
-        scale = "row", Colv = NA)
+        scale = "row", Colv = NA, Rowv = NA)
 #legend(x="right", legend=c("max", "med", "min"), 
 #       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
 #       border = FALSE, bty = "n")
 
-# rescale without cluster zero
-data3ws <- as.data.frame(sapply(subset(data3w, cluster!=0), scale))
-data3ws$cluster <- 1:nClusters  # don't want cluster label scaled
+data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
+data3la <- aggregate(value ~ cluster + channel, data = data3l, max)
+data3w <- tidyr::pivot_wider(data3la, names_from = channel, values_from = value)
+data3ws <- as.data.frame(sapply(data3w, scale))
+data3ws$cluster <- data3w$cluster  # don't want cluster label scaled
 data3ls <- tidyr::pivot_longer(as.data.frame(data3ws), !cluster, names_to = "channel", values_to = "value")
+
+print(ggplot(data3la, aes(y = cluster, x = channel, fill = value)) +
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+              legend.position = "none")  +
+        ggtitle("max"))
 
 print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
         geom_tile() + 
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
               legend.position = "none") +
-        ggtitle("z scaled (no cluster zero)") )
-
+        ggtitle("max z scaled") )
 
 # NB data is already scaled above, get better contrast in the heatmap
-# if we use the default to scale by rows
+# if we use the default to scale by rows as well
 heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
-        scale = "row", Colv = NA)
+        scale = "row", Colv = NA, Rowv = NA)
 #legend(x="right", legend=c("max", "med", "min"), 
 #       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
 #       border = FALSE, bty = "n")
+
+if(min(clusters)==0){
+  
+  # rescale without cluster zero
+  data3ws <- as.data.frame(sapply(subset(data3w, cluster!=0), scale))
+  data3ws$cluster <- 1:nClusters  # don't want cluster label scaled
+  data3ls <- tidyr::pivot_longer(as.data.frame(data3ws), !cluster, names_to = "channel", values_to = "value")
+  
+  print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
+          geom_tile() + 
+          theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+                legend.position = "none") +
+          ggtitle("z scaled (no cluster zero)") )
+  
+  
+  # NB data is already scaled above, get better contrast in the heatmap
+  # if we use the default to scale by rows
+  heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
+          scale = "row", Colv = NA, Rowv = NA)
+  #legend(x="right", legend=c("max", "med", "min"), 
+  #       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
+  #       border = FALSE, bty = "n")
+}
 
 dev.off()
 rm(data3l, data3la, data3w, data3ws, data3ls)
@@ -306,22 +373,22 @@ for(i in 1:length(images_to_process)){
 }  
 close(pb)
 
-data2 <- data.frame(neib_image, neib_cluster, 
+data5 <- data.frame(neib_image, neib_cluster, 
                    neib_area, neib_density)
 
-names(data2) <- c("Image", "Cluster", 
+names(data5) <- c("Image", "Cluster", 
                  "Area", "Density")
 
-write.csv(data2, paste0(clustering_folder, "neighborhood_cluster_totals.csv"),
+write.csv(data5, paste0(clustering_folder, "neighborhood_cluster_totals.csv"),
           row.names = F)
 
 # lock in a cell type order
-data2$Cluster <- factor(data2$Cluster, levels = 1:nClusters)
+data5$Cluster <- factor(data5$Cluster, levels = 1:nClusters)
 
 
 # Plots of image cluster content
 
-d <- data2
+d <- data5
 
 # reduce text size when number of images is large
 n_images <- length(img_names)
