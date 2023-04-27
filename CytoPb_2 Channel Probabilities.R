@@ -168,7 +168,7 @@ for(i in 1:length(img_filenames)){
     
     # Use Sigmoid instead of clamping, bigger f is steeper slope
     # Will ensure 0-1 without sharp cutoff
-    f = 10
+    f = 8
     i_p1 <- 1/(1+exp(-f*(i_p1-0.5)))
     
     filename <- paste0(channel_png_folder, image_name, "_", channel, "_map.png")
