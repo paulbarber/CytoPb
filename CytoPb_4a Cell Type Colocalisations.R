@@ -1,4 +1,4 @@
-# CytoPb: Script 4 Cell Type Colocalisations
+# CytoPb: Script 4a Cell Type Colocalisations
 # P R Barber, Jan 2023
 # Cell type colocalisations
 
@@ -20,7 +20,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 4 Working in:")
+print("CytoPb 4a Working in:")
 print(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
