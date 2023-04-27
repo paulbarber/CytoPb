@@ -38,8 +38,8 @@ Colocalisation_table_filename <- paste0(working_folder, "/Colocalisation Table.c
 Colocalisation_scale_filename <- paste0(working_folder, "/Colocalisation Scale.pdf")
 
 # Define pairs of cell type to compare in these 2 lists
-first_in_pair <- c("CD20.", "CD20.")
-second_in_pair <- c("CD3.", "CD163.CD68.")
+first_in_pair <- c("CD8Trm")
+second_in_pair <- c("MYLD_CD33CD74")
 
 
 library(EBImage)
@@ -60,7 +60,7 @@ scaleSpace <- function (img, t){
   
   w <- makeBrush(size = size, shape = 'gaussian', sigma = sigma)
   
-  filter2(img, w, boundary = 0)
+  filter2(img, w, boundary = "replicate")
 
 }
 
