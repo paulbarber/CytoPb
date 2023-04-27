@@ -1,4 +1,4 @@
-# CytoPb: Script 4 Neiborhood UMAP - EXPERIMENTAL/UNDER DEVELOPMENT
+# CytoPb: Script 4 Neighbourhood UMAP - EXPERIMENTAL/UNDER DEVELOPMENT
 # P R Barber, Apr 2023
 
 # Following from script 3 (using same working directory).
@@ -7,7 +7,7 @@
 # NB umap optimised for clustering
 # Cluster the umap
 # Plot heatmap of marker map values for the determined clusters
-# The aim here is to identify neighborhood types, the 
+# The aim here is to identify neighbourhood types, the 
 # region_grid_size_um can be large.
 
 suppressMessages(library(umap))
@@ -17,11 +17,11 @@ suppressMessages(library(tidyr))
 source("R/binImage.R")
 
 # OPTIONS
-if(!exists("neighborhood_grid_size_um")){   # c("All", "Random", "High.Marker")
+if(!exists("neighbourhood_grid_size_um")){   # c("All", "Random", "High.Marker")
   grid_um = 50
 }else{
-  grid_um = neighborhood_grid_size_um
-  rm(neighborhood_grid_size_um)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+  grid_um = neighbourhood_grid_size_um
+  rm(neighbourhood_grid_size_um)   # this stops in going into global_data_filename and being overwritten if changed and rerun
 }
 
 
@@ -52,7 +52,7 @@ max_colours_for_legend = 50
 grid_size = grid_um/image_scale_umperpixel
 
 # folder to save to
-clustering_folder <- paste0(working_folder, "neighborhood_clustering/")
+clustering_folder <- paste0(working_folder, "neighbourhood_clustering/")
 dir.create(clustering_folder, showWarnings = F)
 
 # data will be a vector of all regions from all images
@@ -129,7 +129,7 @@ data2 <- cbind(data, u)
 
 cat("Saving UMAPs per cell type...\n")
 pb = txtProgressBar(min = 0, max = length(colnames(data)), initial = 0)
-pdf(paste0(clustering_folder, "neighborhood_celltype_umap_plots.pdf"))
+pdf("Neighbourhood Celltype umap Plots.pdf")
 i=1
 for(ch in colnames(data)){
   setTxtProgressBar(pb, i)
@@ -154,7 +154,7 @@ close(pb)
 ## NB Cluster labels start at ZERO, but 0 are "noise points"!!!!!
 #cat(paste0("Number of noise pixels: ", sum(cl$cluster==0), " (", 
 #          round(100*sum(cl$cluster==0)/length(cl$cluster)), "%)\n"))
-#pdf(paste0(clustering_folder, "neighborhood_clustering.pdf"))
+#pdf(paste0(clustering_folder, "neighbourhood_clustering.pdf"))
 #plot(cl, show_flat = T)   # simpler plot showing most stable clusters
 #dev.off()
 
@@ -203,7 +203,7 @@ data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 cbPalette <- c("#000000", rainbow(nClusters+2))
 
 
-pdf(paste0(clustering_folder, "neighborhood_cluster_umap_plot.pdf"))
+pdf("Neighbourhood Cluster umap Plot.pdf")
 ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
         geom_point(aes(colour = cluster), size = 1, alpha = 0.05) +
         scale_colour_manual(values=cbPalette[-1]) +
@@ -235,7 +235,7 @@ dev.off()
 # cluster heatmap
 # This code seems overly complex, but is there a better way to aggregate across
 # all regions and then scale within each cell type?
-pdf(paste0(clustering_folder, "neighborhood_cluster_heatmap.pdf"))
+pdf("Neighbourhood Cluster Heatmap.pdf")
 
 data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
 data3la <- aggregate(value ~ cluster + channel, data = data3l, mean)
@@ -364,7 +364,7 @@ for(i in 1:length(images_to_process)){
   
   d <- colormap(d/nClusters, cbPalette[1:(nClusters+1)])
   
-  filename <- paste0(clustering_folder, "/", image_name, "_neighborhood_cluster_map.png") 
+  filename <- paste0(clustering_folder, "/", image_name, "_neighbourhood_cluster_map.png") 
   writeImage(d, filename)
   rm(d)
   
@@ -380,8 +380,7 @@ data5 <- data.frame(neib_image, neib_cluster,
 names(data5) <- c("Image", "Cluster", 
                  "Area", "Density")
 
-write.csv(data5, paste0(clustering_folder, "neighborhood_cluster_totals.csv"),
-          row.names = F)
+write.csv(data5, "Neighbourhood Cluster Totals.csv", row.names = F)
 
 # lock in a cell type order
 data5$Cluster <- factor(data5$Cluster, levels = 1:nClusters)
@@ -399,7 +398,7 @@ if(n_images > 50){
 }
 
 
-pdf(paste0(clustering_folder, "neighborhood_cluster_totals_plot.pdf"))
+pdf("Neighbourhood Cluster Totals Plot.pdf")
 
 ggp1 <- ggplot(d, aes(x = Image, y = Area, fill = Cluster)) +
         geom_bar(stat = "identity") +
