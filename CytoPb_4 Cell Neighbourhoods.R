@@ -164,7 +164,10 @@ cat("kmeans clustering...\n")
 #cl <- kmeans(u, 20)
 # OR Cluster the data
 cl <- kmeans(data, 50)
-
+# kmeans may not converge with default algorithm
+if (cl$ifault==4) { 
+  cl = kmeans(data, cl$centers, algorithm="MacQueen", iter.max=1000)
+}
 
 nClusters = max(cl$cluster)
 clusters <- cl$cluster
@@ -439,7 +442,7 @@ if(nClusters > max_colours_for_legend){
 dev.off()
 
 
-rm(data, data2, data3)
+rm(data2, data3)
 
 # Save everything so far
 save.image(file = global_data_filename)

@@ -1,4 +1,7 @@
 # CytoPb run all script
+# Best to copy this into the working folder with your data
+# So you can edit for your data set.
+# Raw data in a "raw" subfolder, tiff images will be in a "img" folder etc.
 
 # Specify or select a working folder
 #working_folder <- "D:/images/IMC/data1"
@@ -17,8 +20,7 @@ probability_threshold = 0.1   # Threshold for "high probability", default is 0.5
 source("CytoPb_1 Determine Channel Ranges.R")
 source("CytoPb_2 Channel Probabilities.R")
 source("CytoPb_3 Cell Type Probabilities.R")
-
-
+source("CytoPb_4 Cell Neighbourhoods.R")
 
 
 
