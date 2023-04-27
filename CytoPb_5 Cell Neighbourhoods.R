@@ -10,10 +10,9 @@
 # The aim here is to identify neighborhood types, the 
 # region_grid_size_um can be large.
 
-library(umap)
-library(ggplot2)
-library(dbscan)
-library(tidyr)
+suppressMessages(library(umap))
+suppressMessages(library(ggplot2))
+suppressMessages(library(tidyr))
 
 source("R/binImage.R")
 
@@ -143,6 +142,7 @@ close(pb)
 
 
 #cat("hdbscan clustering...\n")
+#library(dbscan)
 ## minPts is min cluster size BUT also a smoothing factor!
 ##minPts = ceiling(max(4, dim(data)[1]/500))   # some estimate
 ##minPts = 30
@@ -440,7 +440,7 @@ if(nClusters > max_colours_for_legend){
 dev.off()
 
 
-#rm(data, data2, data3)
+rm(data, data2, data3)
 
 # Save everything so far
 save.image(file = global_data_filename)
