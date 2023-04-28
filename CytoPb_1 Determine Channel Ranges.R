@@ -39,8 +39,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-cat("CytoPb 1 Working in:")
-cat(working_folder)
+cat(paste("CytoPb 1 Working in: ", working_folder, "\n"))
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 

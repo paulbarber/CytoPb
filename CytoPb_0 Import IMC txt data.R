@@ -16,8 +16,7 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-cat("CytoPb 0 Working in:")
-cat(working_folder)
+cat(paste("CytoPb 0 Working in: ", working_folder, "\n"))
 
 # where are the raw txt files
 raw_folder <- paste0(working_folder, "/raw")
