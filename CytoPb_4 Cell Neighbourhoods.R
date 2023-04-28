@@ -105,7 +105,7 @@ for(i in 1:length(images_to_process)){
   rm(d)
 }  
 close(pb)
-
+rm(image)
 
 # Copy celltype names and make sure all the names are good for the plots below
 colnames(data) <- make.names(names(ct_matrix))
