@@ -10,10 +10,10 @@
 # The aim here is probably to identify cell types, keep the 
 # region_grid_size_um quite small.
 
-library(umap)
-library(ggplot2)
-library(dbscan)
-library(tidyr)
+suppressMessages(library(umap))
+suppressMessages(library(ggplot2))
+suppressMessages(library(dbscan))
+suppressMessages(library(tidyr))
 
 source("R/binImage.R")
 

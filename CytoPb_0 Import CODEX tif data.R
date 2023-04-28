@@ -5,8 +5,8 @@
 # This is the format of the data provided by 
 # Schürch et. al: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7479520/
 
-library(cytomapper)
-library(strex)
+suppressMessages(library(cytomapper))
+suppressMessages(library(strex))
 
 # Image scale
 #image_scale_umperpixel = 0.37744  # um per pixel
@@ -16,8 +16,8 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 0 Working in:")
-print(working_folder)
+cat("CytoPb 0 Working in:")
+cat(working_folder)
 
 # where are the raw tif files
 raw_folder <- paste0(working_folder, "/raw")
@@ -93,7 +93,7 @@ rm(img)
 rm(img_keep)
 
 
-print("If your image names are long, now is a good time to shorten them.")
+cat("If your image names are long, now is a good time to shorten them.")
 
 # Example image renaming, modify it for your needs and run shorten_image_names()
 

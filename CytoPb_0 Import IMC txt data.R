@@ -4,9 +4,9 @@
 # read raw data from IMC txt files, make tiff and panel.csv
 
 #BiocManager::install("imcRtools")
-library(imcRtools)
-library(EBImage)
-library(strex)
+suppressMessages(library(imcRtools))
+suppressMessages(library(EBImage))
+suppressMessages(library(strex))
 
 # Image scale
 image_scale_umperpixel = 1  # um per pixel
@@ -16,8 +16,8 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 0 Working in:")
-print(working_folder)
+cat("CytoPb 0 Working in:")
+cat(working_folder)
 
 # where are the raw txt files
 raw_folder <- paste0(working_folder, "/raw")
@@ -110,7 +110,7 @@ rm(list = ls(pattern = "panel+[0-9]"))
 # remove this large object from the environment
 rm(raw, img_keep)
 
-print("If your image names are long, now is a good time to shorten them.")
+cat("If your image names are long, now is a good time to shorten them.")
 
 # Example image renaming, modify it for your needs and run shorten_image_names()
 

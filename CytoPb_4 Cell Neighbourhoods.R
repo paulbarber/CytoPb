@@ -142,7 +142,7 @@ close(pb)
 
 
 #cat("hdbscan clustering...\n")
-#library(dbscan)
+#suppressMessages(library(dbscan))
 ## minPts is min cluster size BUT also a smoothing factor!
 ##minPts = ceiling(max(4, dim(data)[1]/500))   # some estimate
 ##minPts = 30
@@ -379,9 +379,9 @@ close(pb)
 
 data5 <- data.frame(neib_image, neib_cluster, 
                    neib_area, neib_density)
-
 names(data5) <- c("Image", "Cluster", 
                  "Area", "Density")
+rm(neib_image, neib_cluster, neib_area, neib_density)
 
 write.csv(data5, paste0(working_folder, "/Neighbourhood Cluster Totals.csv"), row.names = F)
 
@@ -442,7 +442,7 @@ if(nClusters > max_colours_for_legend){
 dev.off()
 
 
-rm(data2, data3)
+rm(data2, data3, images_to_process)
 
 # Save everything so far
 save.image(file = global_data_filename)

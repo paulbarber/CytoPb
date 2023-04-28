@@ -12,15 +12,15 @@
 # a -1 indicates channel should be negative. Empty or NA indicates 
 # we do not care about that channel.
 
-library(cytomapper)
-library(ggplot2)
+suppressMessages(library(cytomapper))
+suppressMessages(library(ggplot2))
 
 if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 3 Working in:")
-print(working_folder)
+cat("CytoPb 3 Working in:")
+cat(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
@@ -114,7 +114,7 @@ areColors <- function(x) {
 
 colours_valid <- areColors(cbPalette)
 if(!all(colours_valid)){
-  print(colours_valid)
+  cat(colours_valid)
   stop("Some provided colours are not valid R colours.")
 }
 
@@ -127,7 +127,7 @@ n_cell_types <- dim(ct_matrix)[2]
 n_markers <- dim(ct_matrix)[1]
 
 if(n_cell_types > (length(cbPalette)-1)){
-  print("Not enough colours provided for the cell types requested.
+  cat("Not enough colours provided for the cell types requested.
        You can add entries to a cell_type_colours.txt file. Meanwhile,
         a rainbow pallette will be used.")
   cbPalette <- c("#000000", rainbow(n_cell_types+2))
@@ -350,6 +350,11 @@ names(data) <- c("Image", "CellType",
                  "Total", "Density", 
                  "Total_highProb", "Density_highProb", "Area_highProb",
                 "Max_probability_area", "Max_probability_area_percentage")
+
+rm(image_names, ct_names, 
+   total, density, 
+   total_highProb, density_highProb, area_highProb,
+   max_prob_area, max_prob_area_perc)
 
 write.csv(data, file = CellTypeTotals_filename, row.names = F)
 

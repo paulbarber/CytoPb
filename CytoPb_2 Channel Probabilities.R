@@ -9,8 +9,8 @@
 # output: scaled and map images to channel_png
 # Save the complete workspace for follow on scripts.
 
-library(cytomapper)
-library(ggplot2)
+suppressMessages(library(cytomapper))
+suppressMessages(library(ggplot2))
 
 # source all the helper functions
 sapply(list.files("R", pattern = "*.R", full.names = T), source)
@@ -31,8 +31,8 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 2 Working in:")
-print(working_folder)
+cat("CytoPb 2 Working in:")
+cat(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
@@ -42,7 +42,7 @@ load(global_data_filename)
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
 if(exists("TEST_specific_image") | exists("TEST_specific_channel")){  # For TEST options
-  print("WARNING: Specific images or channels are being tested")
+  cat("WARNING: Specific images or channels are being tested")
   channel_png_folder <- paste0(working_folder, "/channel_png_TEST/")
 }
 dir.create(channel_png_folder, showWarnings = F)

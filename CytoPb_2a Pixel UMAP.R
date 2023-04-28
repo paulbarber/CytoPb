@@ -7,10 +7,10 @@
 # Cluster the umap
 # Plot heatmap of marker map values for the determined clusters
 
-library(umap)
-library(ggplot2)
-library(dbscan)
-library(tidyr)
+suppressMessages(library(umap))
+suppressMessages(library(ggplot2))
+suppressMessages(library(dbscan))
+suppressMessages(library(tidyr))
 
 # OPTIONS
 if(!exists("umap_pixel_selection")){   # c("All", "Random", "High.Marker")
@@ -32,8 +32,8 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 2a Working in:")
-print(working_folder)
+cat("CytoPb 2a Working in:")
+cat(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 

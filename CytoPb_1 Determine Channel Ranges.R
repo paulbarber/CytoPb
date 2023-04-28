@@ -19,9 +19,9 @@
 #    install.packages("BiocManager")
 #BiocManager::install("cytomapper")
 
-library(cytomapper)
-library(ggplot2)
-library(strex)
+suppressMessages(library(cytomapper))
+suppressMessages(library(ggplot2))
+suppressMessages(library(strex))
 
 # source the helper functions
 source("R/estimateNegPosValue.R")
@@ -39,8 +39,8 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 1 Working in:")
-print(working_folder)
+cat("CytoPb 1 Working in:")
+cat(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
@@ -71,10 +71,10 @@ channels_needed <- panel_keep$name
 panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number", "name")] 
 
 sink(file = channel_list_filename)
-print(paste("All channel names in order are:"))
-print(panel_keep)
-print(paste("Channels needed for cell identification are:"))
-print(panel_needed)
+cat(paste("All channel names in order are:"))
+cat(panel_keep)
+cat(paste("Channels needed for cell identification are:"))
+cat(panel_needed)
 sink(file = NULL)
 
 # Get names of images

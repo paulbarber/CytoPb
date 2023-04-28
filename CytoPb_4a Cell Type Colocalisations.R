@@ -20,8 +20,8 @@ if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
 
-print("CytoPb 4a Working in:")
-print(working_folder)
+cat("CytoPb 4a Working in:")
+cat(working_folder)
 
 global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 
@@ -42,9 +42,9 @@ first_in_pair <- c("CD8Trm")
 second_in_pair <- c("MYLD_CD33CD74")
 
 
-library(EBImage)
-library(ggplot2)
-library(strex)
+suppressMessages(library(EBImage))
+suppressMessages(library(ggplot2))
+suppressMessages(library(strex))
 
 cell_list <- ct_names
 img_list <- img_names
