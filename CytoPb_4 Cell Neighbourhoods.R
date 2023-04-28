@@ -52,7 +52,7 @@ max_colours_for_legend = 50
 grid_size = grid_um/image_scale_umperpixel
 
 # folder to save to
-clustering_folder <- paste0(working_folder, "neighbourhood_clustering/")
+clustering_folder <- paste0(working_folder, "/neighbourhood_clustering/")
 dir.create(clustering_folder, showWarnings = F)
 
 # data will be a vector of all regions from all images
