@@ -37,15 +37,14 @@ Colocalisation_table_filename <- paste0(working_folder, "/Colocalisation Table.c
 Colocalisation_scale_filename <- paste0(working_folder, "/Colocalisation Scale.pdf")
 
 # Define pairs of cell type to compare in these 2 lists
-first_in_pair <- c("CD8Trm")
-second_in_pair <- c("MYLD_CD33CD74")
+first_in_pair <- c("CD8Tcell")
+second_in_pair <- c("Progenitor")
 
 
 suppressMessages(library(EBImage))
 suppressMessages(library(ggplot2))
 suppressMessages(library(strex))
 
-cell_list <- ct_names
 img_list <- img_names
 
 # make a version of an image at a given scale
