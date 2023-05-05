@@ -15,7 +15,6 @@
 # Make a plot of the scale space characteristic distances
 # output: Colocalisation Scale.pdf
 
-
 if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
 }
@@ -27,6 +26,16 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 # Read previous session
 load(global_data_filename)
 
+# Define pairs of cell type to compare in the list externally
+if(!exists("cell_type_pairs")){
+  stop("Please define the List of cell type pairs to compare in CellTypePairs, eg:\n
+        > cell_type_pairs <- list(c(\"CD8cell\", \"CD4cell\"), c(\"Epith\", \"Progenitor\"))\n")
+}else{
+  ct_pairs = cell_type_pairs
+  rm(cell_type_pairs)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+}
+
+
 # Where to look for all the cell type maps
 in_folder <- objects_folder
 out_folder <- paste0(working_folder, "/colocalisation_output/")
@@ -35,10 +44,6 @@ dir.create(out_folder, showWarnings = F)
 # output files
 Colocalisation_table_filename <- paste0(working_folder, "/Colocalisation Table.csv")
 Colocalisation_scale_filename <- paste0(working_folder, "/Colocalisation Scale.pdf")
-
-# Define pairs of cell type to compare in these 2 lists
-first_in_pair <- c("CD8Tcell")
-second_in_pair <- c("Progenitor")
 
 
 suppressMessages(library(EBImage))
@@ -102,18 +107,18 @@ COM_Scale_t <- vector()
 COM_Scale_sigma <- vector()
 Range_Error <- vector()
 
-pb = txtProgressBar(min = 0, max = length(img_list)*length(first_in_pair), 
+pb = txtProgressBar(min = 0, max = length(img_list)*length(ct_pairs), 
                     initial = 0)
 
-for (i in 1: length(first_in_pair)){
+for (i in 1: length(ct_pairs)){
   
   for (j in 1:length(img_list)){
     
     img <- img_list[j]
     setTxtProgressBar(pb, length(img_list)*(i-1) + j)
     
-    ct1 <- first_in_pair[i] 
-    ct2 <- second_in_pair[i]
+    ct1 <- ct_pairs[[i]][1] 
+    ct2 <- ct_pairs[[i]][2]
     ct_names <- paste0(ct1, "_", ct2)
     
     filename <- paste0(in_folder, img, "_celltype_probability_maps.RData")
