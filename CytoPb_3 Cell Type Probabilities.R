@@ -179,7 +179,7 @@ addToGlobalArrays <- function(ct_name, image_name, scores){
 }
 
 
-############# Define cell types in this loop ######################
+############# Cell types ######################
 
 pb = txtProgressBar(min = 0, max = length(img_names), initial = 0)
 for(i in 1:length(img_names)){
@@ -229,6 +229,41 @@ for(i in 1:length(img_names)){
     
   }
   
+  ############ Total tissue area by OR of all channels ##################
+  # OR by inverting all channels, AND them all, invert the result
+  
+  ct_name <- "Total_Tissue"
+  
+  # start with an image of ones
+  os <- l[,,1]  # copy existing image
+  os = os/os    # divide it by itself
+  
+  for(k in 1:n_markers){  # markers
+    
+    marker_name <- row.names(ct_matrix)[k]
+    
+    i_p <- l[,,which(channels_needed == marker_name)]
+    
+    # invert channel
+    i_p <- (1 - i_p)
+    
+    os <- os * i_p
+  }
+  
+  # invert result
+  os <- (1 - os)
+  
+  scores <- process_os(os, image_name, ct_name)
+  
+  addToGlobalArrays(ct_name, image_name, scores)
+  
+  # DON'T Store this probability map for later use
+  # Only generate stats on it
+  #celltype_probability_maps <- combine(celltype_probability_maps, os)
+  
+  ########################################################################
+  
+  
   saveCellTypeMapObject(celltype_probability_maps, image_name, names(ct_matrix))
   rm(celltype_probability_maps)
   
@@ -267,6 +302,7 @@ for(i in 1:length(img_filenames)){
   which_ct <- which_ct * mask
   
   areas <- as.vector(table(factor(which_ct, levels = 0:n_cell_types))) # factor makes sure all cell types are represented
+  areas <- c(areas, NA) # add extra element for Total_Tissue cell type
   
   total_area <- dim(which_ct)[1] * dim(which_ct)[2]
   max_prob_area <- c(max_prob_area, areas[-1])   # exclude first area, the bg
@@ -363,8 +399,7 @@ data$CellType <- factor(data$CellType, levels = names(ct_matrix))
 
 # Plots of cell content
 
-#d <- subset(data, CellType != "CD4Tcell")
-d <- data
+d <- subset(data, CellType != "Total_Tissue")
 
 # reduce text size when number of images is large
 n_images <- length(img_names)
