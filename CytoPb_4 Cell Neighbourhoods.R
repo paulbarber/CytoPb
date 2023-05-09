@@ -70,14 +70,8 @@ for(i in 1:length(images_to_process)){
   image_name <- images_to_process[i]
   
   # Get some cell type probability data
-  filename <- paste0(objects_folder, 
-                     image_name, 
-                     "_celltype_probability_maps.RData")
-  load(filename)
-  image <- celltype_probability_maps
-  rm(celltype_probability_maps)
+  image <- loadCellTypeMapObject(image_name)
 
-  
   # Get rid of low probabilities?
   # <0.1
   

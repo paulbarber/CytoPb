@@ -37,7 +37,9 @@ if(!exists("cell_type_pairs")){
 
 
 # Where to look for all the cell type maps
-in_folder <- objects_folder
+in_folder <- celltype_objects_folder
+
+
 out_folder <- paste0(results_folder, "/colocalisation_output/")
 dir.create(out_folder, showWarnings = F)
 
@@ -121,15 +123,12 @@ for (i in 1: length(ct_pairs)){
     ct2 <- ct_pairs[[i]][2]
     ct_names <- paste0(ct1, "_", ct2)
     
-    filename <- paste0(in_folder, img, "_celltype_probability_maps.RData")
+        # load the cell type prob map we need
+    ct <- loadCellTypeMapObject(img)
+    img1 <- ct[,,which(dim_names == ct1)]
+    img2 <- ct[,,which(dim_names == ct2)]
+    rm(ct)
 
-    load(filename)
-    dim_names <- dimnames(celltype_probability_maps)[[3]]
-    img1 <- celltype_probability_maps[,,which(dim_names == ct1)]
-    img2 <- celltype_probability_maps[,,which(dim_names == ct2)]
-    rm(celltype_probability_maps)
-
-    
     sig <- scaleSpaceSignature(img1, img2)
     
     sig$overlap_gradient <- c(0, sig$overlap[-1] - sig$overlap[1:(length(sig$overlap)-1)])
