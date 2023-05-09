@@ -19,9 +19,11 @@ Script 0 is data import. It will expect a "raw" folder of raw data and will make
 
 Scripts 1, 2 and 3 run through producing the cell type probability maps based on a set of tiff stacks in the img folder and a panel.csv file. After script 2 you can check the channel png folder to see if reasonable positive marker areas have been identified. If not, the pos_value_table.csv file can be adjusted manually (decrease the value to assign more positive signal in this channel).
 
-Script 2a is unfinished, but may allow for exploratory analysis by clustering pixels into cell type clusters.
+Scripts 2a and 2b are unfinished, but may allow for exploratory analysis by clustering pixels into cell type clusters.
 
-Script 4 will measure colocalisation between pairs of cell types as defined within the script using a scale space approach.
+Script 4 will grid the images into neighbourhoods and cluster these into tissue neighbourhood types based on cell content.
+
+Script 4a will measure colocalisation/interaction between pairs of cell types as defined in a list passed to the script using a scale space approach.
 
 ## Outputs
 

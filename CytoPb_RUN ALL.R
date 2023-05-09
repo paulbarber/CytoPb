@@ -20,8 +20,13 @@ probability_threshold = 0.1   # Threshold for "high probability", default is 0.5
 source("CytoPb_1 Determine Channel Ranges.R")
 source("CytoPb_2 Channel Probabilities.R")
 source("CytoPb_3 Cell Type Probabilities.R")
+
+# Neighbourhood processing
 source("CytoPb_4 Cell Neighbourhoods.R")
 
+# Cell type interaction processing
+cell_type_pairs <- list(c("CD8Tcell", "Progenitor"), c("Teffcell", "Progenitor"))
+source("CytoPb_4a Cell Type Colocalisations.R")
 
 
 # Single channel optimisation 
