@@ -2,7 +2,7 @@
 # P R Barber, Mar 2023
 
 # Saving and loading the channel and cell type maps
-# requires objects_folder to be defined 
+# requires objects_folder and celltype_objects_folder to be defined 
 
 channel_probability_maps_name <- "channel_probability_maps"
 celltype_probability_maps_name <- "celltype_probability_maps"
@@ -40,7 +40,7 @@ saveCellTypeMapObject <- function(celltype_probability_maps, image_name, celltyp
   # set dim names for collections of cell types
   dimnames(celltype_probability_maps)[[3]] <- celltype_names
   
-  filename <- paste0(objects_folder, 
+  filename <- paste0(celltype_objects_folder, 
                      image_name, 
                      "_",
                      celltype_probability_maps_name,
@@ -52,7 +52,7 @@ saveCellTypeMapObject <- function(celltype_probability_maps, image_name, celltyp
 loadCellTypeMapObject <- function(image_name){
   
   # load the cell type prob map we need
-  load(paste0(objects_folder, 
+  load(paste0(celltype_objects_folder, 
               image_name, 
               "_",
               celltype_probability_maps_name,

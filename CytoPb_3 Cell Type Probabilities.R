@@ -26,19 +26,34 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 # Read previous session
 load(global_data_filename)
 
-# File locations
+# Input File Locations
 matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
 cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
-markerpercellbyimage_filename <- paste0(working_folder, "/Marker per CellType by image.pdf")
-markerpercell_filename <- paste0(working_folder, "/Marker per CellType.pdf")
-markerpercelltable_filename <- paste0(working_folder, "/Marker per CellType.csv")
-CellTypeTotals_filename <- paste0(working_folder, "/CellTypeTotals.csv")
-CellTotalPlotsfilename <- paste0(working_folder, "/Cell Total Plots.pdf")
+
+# Output File Locations
+# Check for existing data.
+results_folder <- paste0(working_folder, "/CellType_Results")
+r <- dir.create(results_folder, showWarnings = T)
+if(!r){   # Folder already exists, data may be overwritten
+  cat("WARNING: Data will be overwritten. You could rename the previous results folder.\n")
+  cat("Enter 'y' to proceed:\n")
+  proceed = readLines(n=1)
+  stopifnot(proceed == "y")
+}
+
+celltype_objects_folder <- paste0(results_folder, "/objects/")
+dir.create(celltype_objects_folder, showWarnings = F)
+
+markerpercellbyimage_filename <- paste0(results_folder, "/Marker per CellType by image.pdf")
+markerpercell_filename <- paste0(results_folder, "/Marker per CellType.pdf")
+markerpercelltable_filename <- paste0(results_folder, "/Marker per CellType.csv")
+CellTypeTotals_filename <- paste0(results_folder, "/CellTypeTotals.csv")
+CellTotalPlotsfilename <- paste0(results_folder, "/Cell Total Plots.pdf")
 
 # folder to save images to
-celltype_png_folder <- paste0(working_folder, "/celltype_png/")
+celltype_png_folder <- paste0(results_folder, "/celltype_png/")
 dir.create(celltype_png_folder, showWarnings = F)
-celltype_map_folder <- paste0(working_folder, "/celltype_maps/")
+celltype_map_folder <- paste0(results_folder, "/celltype_maps/")
 dir.create(celltype_map_folder, showWarnings = F)
 
 

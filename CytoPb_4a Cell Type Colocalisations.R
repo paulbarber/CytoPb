@@ -38,12 +38,12 @@ if(!exists("cell_type_pairs")){
 
 # Where to look for all the cell type maps
 in_folder <- objects_folder
-out_folder <- paste0(working_folder, "/colocalisation_output/")
+out_folder <- paste0(results_folder, "/colocalisation_output/")
 dir.create(out_folder, showWarnings = F)
 
 # output files
-Colocalisation_table_filename <- paste0(working_folder, "/Colocalisation Table.csv")
-Colocalisation_scale_filename <- paste0(working_folder, "/Colocalisation Scale.pdf")
+Colocalisation_table_filename <- paste0(results_folder, "/Colocalisation Table.csv")
+Colocalisation_scale_filename <- paste0(results_folder, "/Colocalisation Scale.pdf")
 
 
 suppressMessages(library(EBImage))
