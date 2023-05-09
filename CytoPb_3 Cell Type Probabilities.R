@@ -28,6 +28,7 @@ load(global_data_filename)
 
 # Input File Locations
 matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
+copy_matrix_filename <- paste0(results_folder, "/cell_type_matrix.csv")
 cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
 
 # Output File Locations
@@ -134,6 +135,8 @@ if(!all(colours_valid)){
 
 
 ct_matrix <- read.csv(matrix_filename, row.names = 1)
+# copy into the results folder for a record
+file.copy(matrix_filename, copy_matrix_filename)
 # make sure no spaces in the marker row names
 row.names(ct_matrix) <- gsub(" ", "", row.names(ct_matrix))
 
