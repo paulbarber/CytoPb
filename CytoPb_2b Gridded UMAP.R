@@ -2,7 +2,7 @@
 # P R Barber, Apr 2023
 
 # Following from script 2 (using same working directory).
-# Grid the images up into regions (could use "superpixels")
+# Grid the images up into regions (could use "superpixels" in future?)
 # Calculate a UMAP plot of regions based on the marker probability maps
 # NB umap optimised for clustering
 # Cluster the umap
@@ -28,8 +28,8 @@ if(!exists("region_grid_size_um")){   # c("All", "Random", "High.Marker")
 # Select the images to process, doing all together may be too much
 # UMAP takes a while
 # hdbscan clustering takes a while and needs lots of memory
-#images_to_process <- img_names   # Process all images
-images_to_process <- img_names[1]
+images_to_process <- img_names   # Process all images
+#images_to_process <- img_names[1]
 
 
 
@@ -48,7 +48,7 @@ load(global_data_filename)
 grid_size = grid_um/image_scale_umperpixel
 
 # folder to save to
-clustering_folder <- paste0(working_folder, "region_clustering/")
+clustering_folder <- paste0(working_folder, "/region_clustering/")
 dir.create(clustering_folder, showWarnings = F)
 
 # data will be a vector of all regions from all images
@@ -89,7 +89,7 @@ for(i in 1:length(images_to_process)){
   rm(d)
 }  
 close(pb)
-
+rm(image)
 
 # Copy ch names and make sure all the names are good for the plots below
 colnames(data) <- make.names(panel_needed$name)
@@ -113,7 +113,7 @@ u <- as.data.frame(data.umap$layout)
 names(u) <- c("UMAP1", "UMAP2")
 data2 <- cbind(data, u)
 
-cat("Saving UMAPs per channel...")
+cat("Saving UMAPs per channel...\n")
 pb = txtProgressBar(min = 0, max = length(colnames(data)), initial = 0)
 pdf(paste0(clustering_folder, "region_channel_umap_plots.pdf"))
 i=1
@@ -130,23 +130,32 @@ close(pb)
 cat("Clustering...\n")
 # minPts is min cluster size BUT also a smoothing factor!
 #cl <- hdbscan(u, minPts = 5)
-cl <- hdbscan(data, minPts = 5)
+#cl <- hdbscan(data, minPts = 5)
+
+cl <- kmeans(data, 10)
+# kmeans may not converge with default algorithm
+if (cl$ifault==4) { 
+  cl = kmeans(data, cl$centers, algorithm="MacQueen", iter.max=1000)
+}
+
+nClusters = max(cl$cluster)
+clusters <- cl$cluster
 
 cat("Saving plots...\n")
 
 # NB Cluster labels start at ZERO, but 0 are "noise points"!!!!!
 
-pdf(paste0(clustering_folder, "region_clustering.pdf"))
-plot(cl, show_flat = T)   # simpler plot showing most stable clusters
-dev.off()
+# hdbscan only
+#pdf(paste0(clustering_folder, "region_clustering.pdf"))
+#plot(cl, show_flat = T)   # simpler plot showing most stable clusters
+#dev.off()
 
 # cluster colours
-nClusters = max(cl$cluster)
 cbPalette <- c("#000000", rainbow(nClusters+2))
 
-data3 <- cbind(data, cl$cluster)
+data3 <- cbind(data, clusters)
 colnames(data3) <- c(colnames(data), "cluster")
-data4 <- cbind(data2, cl$cluster)
+data4 <- cbind(data2, clusters)
 colnames(data4)[length(colnames(data4))] <- "cluster"
 data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 
@@ -158,13 +167,62 @@ print(ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
 dev.off()
 
 
-# cluster heatmap
-data3m <- tidyr::gather(as.data.frame(data3), key = "channel", value = "value", colnames(data), factor_key=TRUE)
 pdf(paste0(clustering_folder, "region_cluster_heatmap.pdf"))
-print(ggplot(data3m, aes(y = cluster, x = channel, fill = value)) +
-  geom_tile() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-        legend.position = "none") )
+
+data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
+data3la <- aggregate(value ~ cluster + channel, data = data3l, mean)
+data3w <- tidyr::pivot_wider(data3la, names_from = channel, values_from = value)
+data3ws <- as.data.frame(sapply(data3w, scale))
+data3ws$cluster <- data3w$cluster  # don't want cluster label scaled
+data3ls <- tidyr::pivot_longer(as.data.frame(data3ws), !cluster, names_to = "channel", values_to = "value")
+
+print(ggplot(data3la, aes(y = cluster, x = channel, fill = value)) +
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+              legend.position = "none")  +
+        ggtitle("mean"))
+
+print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+              legend.position = "none") +
+        ggtitle("mean z scaled") )
+
+# NB data is already scaled above, get better contrast in the heatmap
+# if we use the default to scale by rows as well
+heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
+        scale = "row", Colv = NA, Rowv = NA)
+#legend(x="right", legend=c("max", "med", "min"), 
+#       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
+#       border = FALSE, bty = "n")
+
+data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
+data3la <- aggregate(value ~ cluster + channel, data = data3l, max)
+data3w <- tidyr::pivot_wider(data3la, names_from = channel, values_from = value)
+data3ws <- as.data.frame(sapply(data3w, scale))
+data3ws$cluster <- data3w$cluster  # don't want cluster label scaled
+data3ls <- tidyr::pivot_longer(as.data.frame(data3ws), !cluster, names_to = "channel", values_to = "value")
+
+print(ggplot(data3la, aes(y = cluster, x = channel, fill = value)) +
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+              legend.position = "none")  +
+        ggtitle("max"))
+
+print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
+        geom_tile() + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+              legend.position = "none") +
+        ggtitle("max z scaled") )
+
+# NB data is already scaled above, get better contrast in the heatmap
+# if we use the default to scale by rows as well
+heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
+        scale = "row", Colv = NA, Rowv = NA)
+#legend(x="right", legend=c("max", "med", "min"), 
+#       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
+#       border = FALSE, bty = "n")
+
 dev.off()
 
 
@@ -180,9 +238,19 @@ for(i in 1:length(images_to_process)){
   d <- data4[st:(st+regions_per_image[i]-1), "cluster"]
   
   # reshape cluster labels like an image
-  dim(d) <- c(region_d1_per_image[i], region_d2_per_image[i])
+  #dim(d) <- c(region_d1_per_image[i], region_d2_per_image[i])
+  
+  # Resize to original size and reshape
+  # This took a little fiddling, repeat each element, reshape into cols,
+  # repeat each col, and transpose.
+  d <- rep(d, each = grid_size)
+  dim(d) <- c(region_d1_per_image[i]*grid_size, region_d2_per_image[i])
+  d <- t(apply(d, 1, rep, each = grid_size))
   
   d <- Image(d)
+  
+  # Resize to original size
+  #d <- resize(d, region_d1_per_image[i]*grid_size) # This is no good, it interpolates
   
   d <- colormap(d/nClusters, cbPalette[1:(nClusters+1)])
   
@@ -196,7 +264,8 @@ for(i in 1:length(images_to_process)){
 }  
 close(pb)
 
-rm(data, data2, data3, data3m)
+rm(data, data2, data3)
+rm(data3l, data3la, data3w, data3ws, data3ls)
 
 # Save everything so far
 save.image(file = global_data_filename)
