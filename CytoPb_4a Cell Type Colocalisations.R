@@ -88,8 +88,12 @@ scaleSpaceSignature <- function (img1, img2) {
     mean_1 <- mean(ss1)
     mean_2 <- mean(ss2)
 
-    # Create an image of the pixel-by-pixel minimum of scale space images, this is the 'overlap', get statistics about the image
-    mean_min <- min(ss1, ss2)
+    # Create an image of the pixel-by-pixel minimum of scale space images, this is the 'overlap', 
+    # get mean of this image
+    sss <- combine(ss1, ss2)
+    mean_min <- apply(sss, c(1,2), min)
+    mean_min <- mean(mean_min) 
+    rm(sss)
     
     #take average of normalising mean overlap by the red and green means
     overlap <- c(overlap, ((mean_min/mean_1) + (mean_min/mean_2)) / 2)
