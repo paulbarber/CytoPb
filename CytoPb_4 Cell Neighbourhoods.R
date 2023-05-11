@@ -24,6 +24,13 @@ if(!exists("neighbourhood_grid_size_um")){   # c("All", "Random", "High.Marker")
   rm(neighbourhood_grid_size_um)   # this stops in going into global_data_filename and being overwritten if changed and rerun
 }
 
+if(!exists("neighbourhood_number_of_clusters")){   # c("All", "Random", "High.Marker")
+  targetClusterNumber = 50
+}else{
+  targetClusterNumber = neighbourhood_number_of_clusters
+  rm(neighbourhood_number_of_clusters)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+}
+
 
 
 if(!exists("working_folder")){
@@ -157,7 +164,7 @@ cat("kmeans clustering...\n")
 # Cluster the UMAP plot
 #cl <- kmeans(u, 20)
 # OR Cluster the data
-cl <- kmeans(data, 50)
+cl <- kmeans(data, targetClusterNumber)
 # kmeans may not converge with default algorithm
 if (cl$ifault==4) { 
   cl = kmeans(data, cl$centers, algorithm="MacQueen", iter.max=1000)
@@ -234,20 +241,20 @@ dev.off()
 # all regions and then scale within each cell type?
 pdf(paste0(results_folder, "/Neighbourhood Cluster Heatmap.pdf"))
 
-data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
-data3la <- aggregate(value ~ cluster + channel, data = data3l, mean)
-data3w <- tidyr::pivot_wider(data3la, names_from = channel, values_from = value)
+data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "cell_type", values_to = "value")
+data3la <- aggregate(value ~ cluster + cell_type, data = data3l, mean)
+data3w <- tidyr::pivot_wider(data3la, names_from = cell_type, values_from = value)
 data3ws <- as.data.frame(sapply(data3w, scale))
 data3ws$cluster <- data3w$cluster  # don't want cluster label scaled
-data3ls <- tidyr::pivot_longer(as.data.frame(data3ws), !cluster, names_to = "channel", values_to = "value")
+data3ls <- tidyr::pivot_longer(as.data.frame(data3ws), !cluster, names_to = "cell_type", values_to = "value")
 
-print(ggplot(data3la, aes(y = cluster, x = channel, fill = value)) +
+print(ggplot(data3la, aes(y = cluster, x = cell_type, fill = value)) +
         geom_tile() + 
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
               legend.position = "none")  +
         ggtitle("mean"))
 
-print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
+print(ggplot(data3ls, aes(y = cluster, x = cell_type, fill = value)) +
         geom_tile() + 
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
               legend.position = "none") +
