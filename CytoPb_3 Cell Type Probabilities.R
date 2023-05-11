@@ -36,7 +36,7 @@ cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
 results_folder <- paste0(working_folder, "/CellType_Results")
 r <- dir.create(results_folder, showWarnings = T)
 if(!r){   # Folder already exists, data may be overwritten
-  cat("WARNING: Data will be overwritten. You could rename the previous results folder.\n")
+  cat("WARNING: CellType_Results folder already exisits.\nData will be overwritten. You could rename the previous results folder.\n")
   cat("Enter 'y' to proceed:\n")
   proceed = readLines(n=1)
   stopifnot(proceed == "y")
