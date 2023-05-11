@@ -28,10 +28,6 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 # Read previous session
 load(global_data_filename)
 
-# Input File Locations
-matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
-copy_matrix_filename <- paste0(results_folder, "/cell_type_matrix.csv")
-cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
 
 # Output File Locations
 # Check for existing data.
@@ -58,6 +54,11 @@ celltype_png_folder <- paste0(results_folder, "/celltype_png/")
 dir.create(celltype_png_folder, showWarnings = F)
 celltype_map_folder <- paste0(results_folder, "/celltype_maps/")
 dir.create(celltype_map_folder, showWarnings = F)
+
+# Input File Locations
+matrix_filename <- paste0(working_folder, "/cell_type_matrix.csv")
+copy_matrix_filename <- paste0(results_folder, "/cell_type_matrix.csv")
+cell_type_colours_filename <- paste0(working_folder, "/cell_type_colours.txt")
 
 
 # Set the high probability threshold, but allow it to be predefined differently
