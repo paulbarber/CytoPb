@@ -26,7 +26,8 @@ source("CytoPb_4 Cell Neighbourhoods.R")
 
 # Cell type interaction processing
 cell_type_pairs <- list(c("CD8Tcell", "Progenitor"), c("Teffcell", "Progenitor"))
-source("CytoPb_4a Cell Type Colocalisations.R")
+cell_present_probability_threshold = 0.5
+source("CytoPb_4a Cell Type Proximity.R")
 
 
 # Single channel optimisation 
