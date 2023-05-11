@@ -23,7 +23,7 @@ Scripts 2a and 2b are unfinished, but may allow for exploratory analysis by clus
 
 Script 4 will grid the images into neighbourhoods and cluster these into tissue neighbourhood types based on cell content.
 
-Script 4a will measure colocalisation/interaction between pairs of cell types as defined in a list passed to the script using a scale space approach.
+Script 4a will measure proximity/interaction between pairs of cell types as defined in a list passed to the script using a scale space approach.
 
 ## Outputs
 
