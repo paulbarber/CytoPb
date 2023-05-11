@@ -3,7 +3,9 @@
 # This file is specific to the panel and cell type - MODIFY FOR YOUR APPLICATION
 
 # For each cell type that you define in the cell_type_matrix.csv,
-# Calculate the probability map and save as tif in celltype_maps folder
+# Calculate the probability map using fuzzy logic multiplication or
+# Zadeh operators (AND = min, OR = max).
+# and save as tif in celltype_maps folder.
 # Plot bar charts from data about how abundant each cell type is in each image
 # output: Cell Total Plots.pdf
 
@@ -48,7 +50,7 @@ dir.create(celltype_objects_folder, showWarnings = F)
 markerpercellbyimage_filename <- paste0(results_folder, "/Marker per CellType by image.pdf")
 markerpercell_filename <- paste0(results_folder, "/Marker per CellType.pdf")
 markerpercelltable_filename <- paste0(results_folder, "/Marker per CellType.csv")
-CellTypeTotals_filename <- paste0(results_folder, "/CellTypeTotals.csv")
+CellTypeTotals_filename <- paste0(results_folder, "/Cell Type Totals.csv")
 CellTotalPlotsfilename <- paste0(results_folder, "/Cell Total Plots.pdf")
 
 # folder to save images to
@@ -216,9 +218,11 @@ for(i in 1:length(img_names)){
     
     ct_name <- names(ct_matrix)[j]
       
+## AND = multiplication
     # start with an image of ones
-    os <- l[,,1]  # copy existing image
-    os = os/os    # divide it by itself
+##    os <- l[,,1]  # copy existing image
+##    os = os/os    # divide it by itself
+    os = NULL
       
     for(k in 1:n_markers){  # markers
       
@@ -235,8 +239,17 @@ for(i in 1:length(img_names)){
       # invert if channel is to be -ve
       if(v < 0) i_p <- (1 - i_p)
 
-      os <- os * i_p
+      ## AND = multiplication
+      ##      os <- os * i_p
+      
+      ### AND = min
+      ### combine all channels into a stack and do min outside the loop
+      os <- combine(os, i_p)
+      
     }
+    
+    ### AND = min
+    os <- apply(os, c(1,2), min)
     
     scores <- process_os(os, image_name, ct_name)
 
@@ -249,12 +262,15 @@ for(i in 1:length(img_names)){
   
   ############ Total tissue area by OR of all channels ##################
   # OR by inverting all channels, AND them all, invert the result
+  # or OR = max
   
   ct_name <- "Total_Tissue"
   
+  ## AND = multiplication
   # start with an image of ones
-  os <- l[,,1]  # copy existing image
-  os = os/os    # divide it by itself
+  ##os <- l[,,1]  # copy existing image
+  ##os = os/os    # divide it by itself
+  os = NULL
   
   for(k in 1:n_markers){  # markers
     
@@ -262,14 +278,24 @@ for(i in 1:length(img_names)){
     
     i_p <- l[,,which(channels_needed == marker_name)]
     
+    ## AND = multiplication
     # invert channel
-    i_p <- (1 - i_p)
+    ##i_p <- (1 - i_p)
     
-    os <- os * i_p
+    ##os <- os * i_p
+    
+    ### OR = max
+    ### combine all channels into a stack and do max outside the loop
+    os <- combine(os, i_p)
   }
   
+  ## AND = multiplication
   # invert result
-  os <- (1 - os)
+  ##os <- (1 - os)
+  
+  ### OR = max
+  os <- apply(os, c(1,2), max)
+  
   
   scores <- process_os(os, image_name, ct_name)
   
