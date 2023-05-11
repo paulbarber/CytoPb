@@ -8,6 +8,7 @@
 # It will calculate the scale space overlap signature
 # between the two cell types, and make an image at the 
 # signature peak scale.
+# Images with a low probability of either cell type produce NA result.
 # output: signature and scale images in colocalisation_output
 # Make a table of the scale space colocalisation values
 # (or characteristic distance)
@@ -33,6 +34,14 @@ if(!exists("cell_type_pairs")){
 }else{
   ct_pairs = cell_type_pairs
   rm(cell_type_pairs)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+}
+
+# At what probability level do we consider there to be any cells?
+if(!exists("cell_present_probability_threshold")){
+  threshold = 0.5
+}else{
+  threshold = cell_present_probability_threshold
+  rm(cell_present_probability_threshold)   # this stops in going into global_data_filename and being overwritten if changed and rerun
 }
 
 
@@ -65,7 +74,12 @@ scaleSpace <- function (img, t){
   
   w <- makeBrush(size = size, shape = 'gaussian', sigma = sigma)
   
-  filter2(img, w, boundary = "replicate")
+  # Filter2 does the convolution, how should it deal with borders?
+  # Default is "circular" (wrap around), not the right choice here, 
+  # imagine cells at opposite sides of the image, these are assumed to be near.
+  # "replicate" takes just the border pixel, not the right choice.
+  # Force a value of zero beyond the image.
+  filter2(img, w, boundary = 0)
 
 }
 
@@ -77,6 +91,13 @@ scaleSpaceSignature <- function (img1, img2) {
   scale_t <- vector()
   scale_sigma <- vector()
   overlap <- vector()
+  
+  # Normalise the images
+  # Seems like a good idea to put them on the same scale
+  # Also will give equal weight to cells of each type,
+  # rather than some convolution of intensity and proximity.
+  img1 <- normalize(img1)
+  img2 <- normalize(img2)
   
   for (i in 0:max_scale){
     t = 2^i
@@ -127,47 +148,55 @@ for (i in 1: length(ct_pairs)){
     ct2 <- ct_pairs[[i]][2]
     ct_names <- paste0(ct1, "_", ct2)
     
-        # load the cell type prob map we need
+    # load the cell type prob map we need
     ct <- loadCellTypeMapObject(img)
     img1 <- ct[,,which(dim_names == ct1)]
     img2 <- ct[,,which(dim_names == ct2)]
     rm(ct)
 
-    sig <- scaleSpaceSignature(img1, img2)
+    if((max(img1) > threshold) & (max(img2) > threshold)){   # Check for cells of these types
     
-    sig$overlap_gradient <- c(0, sig$overlap[-1] - sig$overlap[1:(length(sig$overlap)-1)])
-    com_n <- sum(sig$overlap_gradient * 1:length(sig$overlap_gradient))
-    com_d <- sum(sig$overlap_gradient)
+      sig <- scaleSpaceSignature(img1, img2)
+      
+      sig$overlap_gradient <- c(0, sig$overlap[-1] - sig$overlap[1:(length(sig$overlap)-1)])
+      com_n <- sum(sig$overlap_gradient * 1:length(sig$overlap_gradient))
+      com_d <- sum(sig$overlap_gradient)
+      
+      # plot overlap versus scale
+      filename <- paste0(out_folder, img, "_", ct_names, "_signature.png")
+      png(filename)
+      suppressMessages(
+        print(ggplot(sig, aes(x = scale_sigma, y = overlap)) +
+        scale_x_log10() +
+        geom_line())
+      )
+      dev.off()
     
-    # plot overlap versus scale
-    filename <- paste0(out_folder, img, "_", ct_names, "_signature.png")
-    png(filename)
-    suppressMessages(
-      print(ggplot(sig, aes(x = scale_sigma, y = overlap)) +
-      scale_x_log10() +
-      geom_line())
-    )
-    dev.off()
-  
-    # Get peak and COM of gradient
-    ii = which.max(sig$overlap_gradient)
-    t = sig$scale_t[ii];
-    com_t = 2^(com_n / com_d)
-    
-    # try to make sure peak is well contained in the scale limits used
-    critical_value = sig$overlap_gradient[ii] / 3;
-    bgn <- sig$overlap_gradient[1]
-    end <- sig$overlap_gradient[length(sig$overlap_gradient)]
-    # make sure no NaN values reach the if statement, which will throw an error
-    if(is.nan(critical_value)) critical_value = 0
-    if(is.nan(bgn)) bgn = critical_value
-    if(is.nan(end)) end = critical_value
-    
-    if (critical_value > bgn && critical_value > end) {
-      range_error = 0
+      # Get peak and COM of gradient
+      ii = which.max(sig$overlap_gradient)
+      t = sig$scale_t[ii];
+      com_t = 2^(com_n / com_d)
+      
+      # try to make sure peak is well contained in the scale limits used
+      critical_value = sig$overlap_gradient[ii] / 3;
+      bgn <- sig$overlap_gradient[1]
+      end <- sig$overlap_gradient[length(sig$overlap_gradient)]
+      # make sure no NaN values reach the if statement, which will throw an error
+      if(is.nan(critical_value)) critical_value = 0
+      if(is.nan(bgn)) bgn = critical_value
+      if(is.nan(end)) end = critical_value
+      
+      if (critical_value > bgn && critical_value > end) {
+        range_error = 0
+      } else {
+        range_error = 1
+      }  
+      
     } else {
-      range_error = 1
-    }  
+      t = NA
+      com_t = NA
+      range_error = NA
+    }
     
     Image <- c(Image, img)
     Cell_Type_Pair <- c(Cell_Type_Pair, ct_names)
@@ -178,12 +207,14 @@ for (i in 1: length(ct_pairs)){
     Range_Error <- c(Range_Error, range_error)
     
     # make scale space image at peak overlap
-    ss1 <- scaleSpace(img1, t)
-    ss2 <- scaleSpace(img2, t)
-  
-    ss <- rgbImage(red = ss1/max(ss1), green = ss2/max(ss2))
-    filename <- paste0(out_folder, img, "_", ct_names, ".png")
-    writeImage(ss, filename)
+    if(!is.na(t)){
+      ss1 <- scaleSpace(img1, t)
+      ss2 <- scaleSpace(img2, t)
+    
+      ss <- rgbImage(red = ss1/max(ss1), green = ss2/max(ss2))
+      filename <- paste0(out_folder, img, "_", ct_names, ".png")
+      writeImage(ss, filename)
+    }
   }
   
 }
