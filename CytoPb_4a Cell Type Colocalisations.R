@@ -1,6 +1,6 @@
-# CytoPb: Script 4a Cell Type Colocalisations
+# CytoPb: Script 4a Cell Type Proximity
 # P R Barber, Jan 2023
-# Cell type colocalisations
+# Cell type Proximity
 
 # Input is the cell type tif files in celltype_tif
 # You define the pairs of cell type you want to colocalise
@@ -9,12 +9,12 @@
 # between the two cell types, and make an image at the 
 # signature peak scale.
 # Images with a low probability of either cell type produce NA result.
-# output: signature and scale images in colocalisation_output
-# Make a table of the scale space colocalisation values
+# output: signature and scale images in proximity_output
+# Make a table of the scale space proximity values
 # (or characteristic distance)
-# output: Colocalisation Table.csv
+# output: proximity Table.csv
 # Make a plot of the scale space characteristic distances
-# output: Colocalisation Scale.pdf
+# output: proximity Scale.pdf
 
 if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
@@ -49,12 +49,12 @@ if(!exists("cell_present_probability_threshold")){
 in_folder <- celltype_objects_folder
 
 
-out_folder <- paste0(results_folder, "/colocalisation_output/")
+out_folder <- paste0(results_folder, "/proximity_output/")
 dir.create(out_folder, showWarnings = F)
 
 # output files
-Colocalisation_table_filename <- paste0(results_folder, "/Colocalisation Table.csv")
-Colocalisation_scale_filename <- paste0(results_folder, "/Colocalisation Scale.pdf")
+Proximity_table_filename <- paste0(results_folder, "/Proximity Table.csv")
+Proximity_scale_filename <- paste0(results_folder, "/Proximity Scale.pdf")
 
 
 suppressMessages(library(EBImage))
@@ -223,13 +223,13 @@ close(pb)
 data <- data.frame(Image, Cell_Type_Pair,
                    Peak_Scale_t, Peak_Scale_sigma, 
                    COM_Scale_t, COM_Scale_sigma, Range_Error)
-write.csv(data, file = Colocalisation_table_filename, row.names = F)
+write.csv(data, file = Proximity_table_filename, row.names = F)
 
 # From previous simulations COM_scale_sigma is linearly proportional to the characteristic separation distance.
 # See: Redefining_Colocalisation_Jan2023
-data <- read.csv(file = Colocalisation_table_filename)
+data <- read.csv(file = Proximity_table_filename)
 
-pdf(Colocalisation_scale_filename)
+pdf(Proximity_scale_filename)
 d <- subset(data, Range_Error == 0)
 print(ggplot(d, aes(x = Image, y = COM_Scale_sigma, fill = Cell_Type_Pair)) +
   geom_bar(stat="identity", position=position_dodge()) +
