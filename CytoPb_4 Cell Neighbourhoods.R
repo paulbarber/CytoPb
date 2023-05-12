@@ -206,7 +206,6 @@ data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 # cluster colours
 #cbPalette <- c("#000000", rainbow(nClusters+2))
 cbPalette <- c("black", unname(Polychrome::createPalette(nClusters,  c("#ff0000", "#00ff00", "#0000ff"))))
-rm(colours)
 
 pdf(paste0(results_folder, "/Neighbourhood Cluster umap Plot.pdf"))
 ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
