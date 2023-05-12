@@ -56,7 +56,7 @@ images_to_process <- img_names   # Process all images
 
 max_colours_for_legend = 50
 
-grid_size = grid_um/image_scale_umperpixel
+grid_size = round(grid_um/image_scale_umperpixel)
 
 # folder to save to
 clustering_folder <- paste0(results_folder, "/neighbourhood_clustering/")
