@@ -142,6 +142,8 @@ ct_matrix <- read.csv(matrix_filename, row.names = 1)
 file.copy(matrix_filename, copy_matrix_filename)
 # make sure no spaces in the marker row names
 row.names(ct_matrix) <- gsub(" ", "", row.names(ct_matrix))
+# and the list of channels matches
+full_channel_list <- gsub(" ", "", channels_needed)
 
 n_cell_types <- dim(ct_matrix)[2]
 n_markers <- dim(ct_matrix)[1]
@@ -235,7 +237,7 @@ for(i in 1:length(img_names)){
       if(is.na(v)) next
       if(v==0) next
       
-      i_p <- l[,,which(channels_needed == marker_name)]
+      i_p <- l[,,which(full_channel_list == marker_name)]
       
       # invert if channel is to be -ve
       if(v < 0) i_p <- (1 - i_p)
@@ -277,7 +279,7 @@ for(i in 1:length(img_names)){
     
     marker_name <- row.names(ct_matrix)[k]
     
-    i_p <- l[,,which(channels_needed == marker_name)]
+    i_p <- l[,,which(full_channel_list == marker_name)]
     
     ## AND = multiplication
     # invert channel
@@ -321,7 +323,7 @@ rm(l)
 
 
 # Make images of most likely cell type per pixel
-mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed), data = 0)
+mean_per_ct <- matrix(nrow = n_cell_types, ncol = length(full_channel_list), data = 0)
 mean_per_ct_table <- data.frame()
 pdf(markerpercellbyimage_filename)
 pb = txtProgressBar(min = 0, max = length(img_filenames), initial = 0)
@@ -332,7 +334,7 @@ for(i in 1:length(img_filenames)){
   image_name <- names(images)[1]
   
   # set dim names for the images
-  dimnames(images@listData[[1]])[[3]] <- channels_needed
+  dimnames(images@listData[[1]])[[3]] <- full_channel_list
   
   # load the cell type prob map we need
   ct <- loadCellTypeMapObject(image_name)
@@ -362,8 +364,8 @@ for(i in 1:length(img_filenames)){
   rm(y)
   
   # find average marker strength per cell type
-  strength_per_ct <- matrix(nrow = n_cell_types, ncol = length(channels_needed))
-  colnames(strength_per_ct) <- channels_needed
+  strength_per_ct <- matrix(nrow = n_cell_types, ncol = length(full_channel_list))
+  colnames(strength_per_ct) <- full_channel_list
   rownames(strength_per_ct) <- names(ct_matrix)
   img <- images@listData[[1]]   # all channels for this image
   for(j in 1:n_cell_types){
@@ -371,7 +373,7 @@ for(i in 1:length(img_filenames)){
     mask <- which_ct == j
     # mean for each channel
     strength <- vector()
-    for(k in 1:length(channels_needed)){
+    for(k in 1:length(full_channel_list)){
       ch <- img[,,k]
       
       s <- mean(ch[mask], na.rm = TRUE)
@@ -392,7 +394,7 @@ for(i in 1:length(img_filenames)){
   m <- scale(strength_per_ct)
   m <- as.data.frame(m)
   m$CellType <- rownames(strength_per_ct)
-  d <- tidyr::gather(m, Channel, Mean, 1:length(channels_needed), factor_key=TRUE)
+  d <- tidyr::gather(m, Channel, Mean, 1:length(full_channel_list), factor_key=TRUE)
   d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
   d$CellType <- factor(d$CellType, levels=unique(d$CellType)) # keep CellType order in plot
   
@@ -528,7 +530,7 @@ dev.off()
 m <- scale(mean_per_ct)
 m <- as.data.frame(m)
 m$CellType <- rownames(mean_per_ct)
-d <- tidyr::gather(m, Channel, Mean, 1:length(channels_needed), factor_key=TRUE)
+d <- tidyr::gather(m, Channel, Mean, 1:length(full_channel_list), factor_key=TRUE)
 d$Channel <- factor(d$Channel, levels=unique(d$Channel)) # keep channel order in plot
 d$CellType <- factor(d$CellType, levels=unique(d$CellType)) # keep CellType order in plot
 
