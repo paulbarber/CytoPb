@@ -16,22 +16,6 @@ suppressMessages(library(tidyr))
 
 source("R/binImage.R")
 
-# OPTIONS
-if(!exists("neighbourhood_grid_size_um")){   # c("All", "Random", "High.Marker")
-  grid_um = 50
-}else{
-  grid_um = neighbourhood_grid_size_um
-  rm(neighbourhood_grid_size_um)   # this stops in going into global_data_filename and being overwritten if changed and rerun
-}
-
-if(!exists("neighbourhood_number_of_clusters")){   # c("All", "Random", "High.Marker")
-  targetClusterNumber = 50
-}else{
-  targetClusterNumber = neighbourhood_number_of_clusters
-  rm(neighbourhood_number_of_clusters)   # this stops in going into global_data_filename and being overwritten if changed and rerun
-}
-
-
 
 if(!exists("working_folder")){
   working_folder <- choose.dir(caption = "Select data folder")
@@ -44,6 +28,21 @@ global_data_filename <- paste0(working_folder, "/CytoPb.RData")
 # Read previous session
 load(global_data_filename)
 
+# OPTIONS
+if(!exists("neighbourhood_grid_size_um")){   # c("All", "Random", "High.Marker")
+  grid_um = 50
+}else{
+  grid_um = neighbourhood_grid_size_um
+  rm(neighbourhood_grid_size_um)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+}
+
+
+if(!exists("neighbourhood_number_of_clusters")){   # c("All", "Random", "High.Marker")
+  targetClusterNumber = 50
+}else{
+  targetClusterNumber = neighbourhood_number_of_clusters
+  rm(neighbourhood_number_of_clusters)   # this stops in going into global_data_filename and being overwritten if changed and rerun
+}
 
 
 # Select the images to process, doing all together may be too much
