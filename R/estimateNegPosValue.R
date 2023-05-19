@@ -32,7 +32,7 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   # calculate negative and positive image values in the original image units
   # suppressWarnings on max in case there is no foreground
   #posv <- suppressWarnings((mean(img_blur[img4==1])))                              *************************
-  posv <- suppressWarnings((quantile(img_blur[img4==1], 0.05)))    #  percentile, err on the low side
+  posv <- suppressWarnings((quantile(img_blur[img4>0], 0.05)))    #  percentile, err on the low side
   negv <- suppressWarnings((mean(img_blur[img4==0])))
   
   # If posv comes out 0 (max returns -Inf), there was no foreground = NA
