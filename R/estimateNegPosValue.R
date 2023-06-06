@@ -24,9 +24,10 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   img4 <- rmObjects(img4, o)    # remove small objects, fg is left
   rm(t, o)
   
-  image_name <- names(image)[1]
-  filename <- paste0(channel_png_folder, image_name, "_", channel, "_fgmask.png")
-  writeImage(img4, filename)
+  # Can export the fg mask here
+  #image_name <- names(image)[1]
+  #filename <- paste0(channel_png_folder, image_name, "_", channel, "_fgmask.png")
+  #writeImage(img4, filename)
   
   
   # calculate negative and positive image values in the original image units
