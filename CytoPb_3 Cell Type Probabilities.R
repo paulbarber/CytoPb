@@ -32,7 +32,7 @@ load(global_data_filename)
 # Output File Locations
 # Check for existing data.
 results_folder <- paste0(working_folder, "/CellType_Results")
-r <- dir.create(results_folder, showWarnings = T)
+r <- dir.create(results_folder, showWarnings = F)
 if(!r){   # Folder already exists, data may be overwritten
   cat("WARNING: CellType_Results folder already exisits.\nData will be overwritten. You could rename the previous results folder.\n")
   cat("Enter 'y' to proceed:\n")
