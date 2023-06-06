@@ -71,9 +71,9 @@ panel_needed <- panel_keep[panel_keep$name %in% channels_needed, c("image_number
 
 sink(file = channel_list_filename)
 cat(paste("All channel names in order are:"))
-cat(panel_keep)
+print(panel_keep)
 cat(paste("Channels needed for cell identification are:"))
-cat(panel_needed)
+print(panel_needed)
 sink(file = NULL)
 
 # Get names of images
