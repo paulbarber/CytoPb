@@ -155,15 +155,14 @@ if(length(img_filenames) > 1){
   # OR assume all pos values are good (since fg is strict) and take the mean or something
   #pos_table$global <- rowMeans(pos_table[,3:dim(pos_table)[2]], na.rm = TRUE)             ####################### 
   pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)
-
+  
+  rm(p)
+  #rm(mn, mx, t)
+  
 } else {  # only 1 image
   neg_table$global <- neg_table[,3]
   pos_table$global <- pos_table[,3]
 }
-
-
-
-rm(p, mn, mx, t)
 
 plotPosValues(pos_table, pos_value_plot_filename)
 
