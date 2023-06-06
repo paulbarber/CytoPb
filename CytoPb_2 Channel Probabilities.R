@@ -41,7 +41,7 @@ load(global_data_filename)
 # folder to save channel QC images to
 channel_png_folder <- paste0(working_folder, "/channel_png/")
 if(exists("TEST_specific_image") | exists("TEST_specific_channel")){  # For TEST options
-  cat("WARNING: Specific images or channels are being tested")
+  cat("WARNING: Specific images or channels are being tested\n")
   channel_png_folder <- paste0(working_folder, "/channel_png_TEST/")
 }
 dir.create(channel_png_folder, showWarnings = F)
