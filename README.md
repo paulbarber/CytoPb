@@ -50,7 +50,7 @@ A qualitative heatmap of the channel intensities defined to be marker positive (
 
 ## How to cite
 
-Please cite the repository URL (https://github.com/paulbarber/CytoPb). There are no publications associated with the code yet. 
+Please cite the paper (https://www.biorxiv.org/content/10.1101/2023.07.26.550516v1) and this repository URL (https://github.com/paulbarber/CytoPb). 
 
 
 ## Licence
