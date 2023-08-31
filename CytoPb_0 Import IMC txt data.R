@@ -18,7 +18,7 @@ if(!exists("working_folder")){
 
 cat(paste("CytoPb 0 Working in: ", working_folder, "\n"))
 
-# where are the raw txt files
+# where are the raw txt files, they can be in subfolders
 raw_folder <- paste0(working_folder, "/raw")
 if(!dir.exists(raw_folder)){
   stop("There is no 'raw' data folder")
@@ -32,14 +32,27 @@ img_folder <- paste0(working_folder, "/img/")
 dir.create(img_folder, showWarnings = F)
 
 
-# Get names of raw images
-raw_filenames <- list.files(raw_folder, pattern = "*.txt$", full.names = F)
-#raw_names <- str_before_last_dot(list.files(raw_folder, pattern = "*.txt$", full.names = F))
+# Get names of raw images, recursively into all folders
+raw_filenames <- list.files(raw_folder, 
+                            pattern = "*.txt$", 
+                            full.names = T,
+                            recursive = T)
 
 # Loop over all the files
 for(i in 1:length(raw_filenames)){
+  
+  this_filename <- basename(raw_filenames[i])
+  this_folder <- dirname(raw_filenames[i])
+  
   # Read in the raw data
-  raw <- readImagefromTXT(raw_folder, pattern = raw_filenames[i])
+  raw <- NULL
+  try(raw <- readImagefromTXT(this_folder, pattern = this_filename))
+  if(is.null(raw)){
+    cat(paste("Skipping:   ", this_filename, " (not an image file)\n"))
+    next
+  } else {
+    cat(paste("Processing: ", this_filename, "\n"))
+  }
   
   image_name <- names(raw)[1]
   img <- raw@listData[[1]]
@@ -47,7 +60,7 @@ for(i in 1:length(raw_filenames)){
   channel <- sub("Di", "", dimnames(img)[[3]])
   
   # There is Target information in the first line of the text file
-  con <- file(paste0(raw_folder, "/", image_name, ".txt"), "r")
+  con <- file(paste0(this_folder, "/", image_name, ".txt"), "r")
   header <- readLines(con, n = 1)
   close(con)
   cols <- strsplit(header, "\t")
@@ -80,6 +93,8 @@ for(i in 1:length(raw_filenames)){
   # If they are saved without scaling, they somehow get thresholded and become binary.
   # This seems to be a problem with EBImage.
 }
+
+rm(this_filename, this_folder)
 
 # Check panels for all file are identical
 # assume panel1 is the one
