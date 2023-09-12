@@ -52,11 +52,8 @@ channel_list_filename <- paste0(working_folder, "/Channel Lists.txt")
 pos_value_filename <- paste0(working_folder, "/pos_value_table.csv")
 neg_value_filename <- paste0(working_folder, "/neg_value_table.csv")
 pos_value_plot_filename <- paste0(working_folder, "/Positive Value Plot.pdf")
-
-# folder to save channel QC images to
-channel_png_folder <- paste0(working_folder, "/channel_png/")
-dir.create(channel_png_folder, showWarnings = F)
-
+neg_value_plot_filename <- paste0(working_folder, "/Negative Value Plot.pdf")
+range_plot_filename <- paste0(working_folder, "/Range Plot.pdf")
 
 # read in channel names
 panel <- read.csv(panel_location)
@@ -153,8 +150,8 @@ if(length(img_filenames) > 1){
   #pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
   
   # OR assume all pos values are good (since fg is strict) and take the mean or something
-  #pos_table$global <- rowMeans(pos_table[,3:dim(pos_table)[2]], na.rm = TRUE)             ####################### 
-  pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)
+  pos_table$global <- rowMeans(pos_table[,3:dim(pos_table)[2]], na.rm = TRUE)
+  #pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)  # This was default March 2023-Sept 2023, and often caused pos<neg values.
   
   rm(p)
   #rm(mn, mx, t)
@@ -165,6 +162,8 @@ if(length(img_filenames) > 1){
 }
 
 plotPosValues(pos_table, pos_value_plot_filename)
+plotPosValues(neg_table, neg_value_plot_filename)
+plotRanges(pos_table, neg_table, range_plot_filename)
 
 write.csv(pos_table, file = pos_value_filename, row.names = F)
 write.csv(neg_table, file = neg_value_filename, row.names = F)

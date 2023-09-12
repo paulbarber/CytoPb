@@ -27,6 +27,7 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   # Can export the fg mask here
   #image_name <- names(image)[1]
   #filename <- paste0(channel_png_folder, image_name, "_", channel, "_fgmask.png")
+  #dir.create(channel_png_folder, showWarnings = F)
   #writeImage(img4, filename)
   
   

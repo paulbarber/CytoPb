@@ -92,6 +92,7 @@ for(i in 1:length(img_filenames)){
     
     setTxtProgressBar(pb,(i-1)*length(channels_needed) + j)
     
+    
     # If we have set a specific channel to test, and this is not that channel, continue to next
     if(exists("TEST_specific_channel")){
       if(TEST_specific_channel != channels_needed[j]){
@@ -102,7 +103,12 @@ for(i in 1:length(img_filenames)){
     # Channel of interest
     channel <- channels_needed[j]
     i_p1 <- images@listData[[1]][,,channel]
-  
+    
+    # Create a folder for this channel, may already have been done
+    channel_png_folder_channel <- paste0(channel_png_folder, "/",
+                                         channel, "/")
+    dir.create(channel_png_folder_channel, showWarnings = F)
+    
     # Get scaling parameters
     if(use_global){
       nv1 <- neg_table[which(neg_table$Channel == channel), "global"]     
@@ -152,11 +158,11 @@ for(i in 1:length(img_filenames)){
     #filename <- paste0(channel_png_folder, image_name, "_", channel, ".png")
     #writeImage(i_p1*256, filename)
     
+    filename <- paste0(channel_png_folder_channel, image_name, "_", channel, ".png")
+    writeImage(normalize(i_p1), filename)
+    
     # blur to account for cell size/position uncertainties
     i_p1 <- gblur(i_p1, sigma = sigma, boundary = 0)
-    
-    filename <- paste0(channel_png_folder, image_name, "_", channel, ".png")
-    writeImage(normalize(i_p1), filename)
     
     # re-scale 0-1 to get an estimate of the probability of being positive.
     i_p1 <- (i_p1 - nv1)/(pv1 - nv1)
@@ -170,7 +176,7 @@ for(i in 1:length(img_filenames)){
     f = 8
     i_p1 <- 1/(1+exp(-f*(i_p1-0.5)))
     
-    filename <- paste0(channel_png_folder, image_name, "_", channel, "_map.png")
+    filename <- paste0(channel_png_folder_channel, image_name, "_", channel, "_map.png")
     y = colormap(i_p1, jet.colors(256))
     writeImage(y, filename)
     
