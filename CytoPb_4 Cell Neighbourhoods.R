@@ -5,7 +5,7 @@
 # Grid the images up into regions
 # Calculate a UMAP plot of regions based on the marker probability maps
 # NB umap optimised for clustering
-# Cluster the umap
+# Cluster the data or the umap
 # Plot heatmap of marker map values for the determined clusters
 # The aim here is to identify neighbourhood types, the 
 # region_grid_size_um can be large.
