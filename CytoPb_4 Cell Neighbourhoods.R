@@ -13,6 +13,7 @@
 suppressMessages(library(umap))
 suppressMessages(library(ggplot2))
 suppressMessages(library(tidyr))
+suppressMessages(library(Polychrome))
 
 source("R/binImage.R")
 
