@@ -4,7 +4,7 @@
 
 # Input is the cell type tif files in celltype_tif
 # You define the pairs of cell type you want to colocalise
-# in the first_in_pair and second_in_pair lists (vectors)
+# in the list of vector pairs (see "cell_type_pairs" below).
 # It will calculate the scale space overlap signature
 # between the two cell types, and make an image at the 
 # signature peak scale.
@@ -150,6 +150,7 @@ for (i in 1: length(ct_pairs)){
     
     # load the cell type prob map we need
     ct <- loadCellTypeMapObject(img)
+    dim_names <- dimnames(ct)[[3]]
     img1 <- ct[,,which(dim_names == ct1)]
     img2 <- ct[,,which(dim_names == ct2)]
     rm(ct)
