@@ -137,10 +137,10 @@ Range_Error <- vector()
 pb = txtProgressBar(min = 0, max = length(img_list)*length(ct_pairs), 
                     initial = 0)
 
-for (i in 1: length(ct_pairs)){
+for (i in 1:length(ct_pairs)){
   
   for (j in 1:length(img_list)){
-    
+
     img <- img_list[j]
     setTxtProgressBar(pb, length(img_list)*(i-1) + j)
     
@@ -180,17 +180,21 @@ for (i in 1: length(ct_pairs)){
       
       # try to make sure peak is well contained in the scale limits used
       critical_value = sig$overlap_gradient[ii] / 3;
-      bgn <- sig$overlap_gradient[1]
+      bgn <- sig$overlap_gradient[2]  # first entry always 0, use second
       end <- sig$overlap_gradient[length(sig$overlap_gradient)]
       # make sure no NaN values reach the if statement, which will throw an error
       if(is.nan(critical_value)) critical_value = 0
       if(is.nan(bgn)) bgn = critical_value
       if(is.nan(end)) end = critical_value
       
-      if (critical_value > bgn && critical_value > end) {
-        range_error = 0
+      if (critical_value < bgn | critical_value < end) {
+        range_error = 1   # overlap range not captured
+      } else if (sig$overlap[1] > 0.75) {
+        range_error = 2   # already overlapped at the smallest scale
+      } else if (sig$overlap[length(sig$overlap)] < 0.25) {
+        range_error = 3   # not overlapped at the largest scale
       } else {
-        range_error = 1
+        range_error = 0   # good
       }  
       
     } else {
@@ -230,11 +234,19 @@ write.csv(data, file = Proximity_table_filename, row.names = F)
 # See: Redefining_Colocalisation_Jan2023
 data <- read.csv(file = Proximity_table_filename)
 
+# reduce text size when number of images is large
+n_images <- length(img_names)
+rel_size = 1
+if(n_images > 50){
+  rel_size = 50/n_images
+}
+
 pdf(Proximity_scale_filename)
 d <- subset(data, Range_Error == 0)
 print(ggplot(d, aes(x = Image, y = COM_Scale_sigma, fill = Cell_Type_Pair)) +
   geom_bar(stat="identity", position=position_dodge()) +
-  coord_flip())
+  coord_flip() +
+  theme(axis.text.y = element_text(size = rel(rel_size))))
 dev.off()
 
 
