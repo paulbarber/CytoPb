@@ -16,6 +16,7 @@ suppressMessages(library(tidyr))
 suppressMessages(library(Polychrome))
 
 source("R/binImage.R")
+source("R/kmeansAICBIC.R")
 
 
 if(!exists("working_folder")){
@@ -59,7 +60,7 @@ max_colours_for_legend = 50
 grid_size = round(grid_um/image_scale_umperpixel)
 
 # folder to save to
-clustering_folder <- paste0(results_folder, "/neighbourhood_clustering/")
+clustering_folder <- paste0(results_folder, "/neighbourhood_clustering_c", targetClusterNumber, "/")
 dir.create(clustering_folder, showWarnings = F)
 
 # data will be a vector of all regions from all images
@@ -130,7 +131,7 @@ data2 <- cbind(data, u)
 
 cat("Saving UMAPs per cell type...\n")
 pb = txtProgressBar(min = 0, max = length(colnames(data)), initial = 0)
-pdf(paste0(results_folder, "/Neighbourhood Celltype umap Plots.pdf"))
+pdf(paste0(results_folder, "/Neighbourhood Celltype umap Plots_c", targetClusterNumber, ".pdf"))
 i=1
 for(ch in colnames(data)){
   setTxtProgressBar(pb, i)
@@ -170,6 +171,10 @@ if (cl$ifault==4) {
   cl = kmeans(data, cl$centers, algorithm="MacQueen", iter.max=1000)
 }
 
+write.csv(kmeansAICBIC(cl), 
+          paste0(results_folder, "/Neighbourhood Cluster AICBIC_c", targetClusterNumber, ".csv"),
+          row.names = F)
+
 nClusters = max(cl$cluster)
 clusters <- cl$cluster
 
@@ -207,7 +212,7 @@ data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 #cbPalette <- c("#000000", rainbow(nClusters+2))
 cbPalette <- c("black", unname(Polychrome::createPalette(nClusters,  c("#ff0000", "#00ff00", "#0000ff"))))
 
-pdf(paste0(results_folder, "/Neighbourhood Cluster umap Plot.pdf"))
+pdf(paste0(results_folder, "/Neighbourhood Cluster umap Plot_c", targetClusterNumber, ".pdf"))
 ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
         geom_point(aes(colour = cluster), size = 1, alpha = 0.5) +
         scale_colour_manual(values=cbPalette[-1]) +
@@ -239,7 +244,7 @@ dev.off()
 # cluster heatmap
 # This code seems overly complex, but is there a better way to aggregate across
 # all regions and then scale within each cell type?
-pdf(paste0(results_folder, "/Neighbourhood Cluster Heatmap.pdf"))
+pdf(paste0(results_folder, "/Neighbourhood Cluster Heatmap_c", targetClusterNumber, ".pdf"))
 
 data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "cell_type", values_to = "value")
 data3la <- aggregate(value ~ cluster + cell_type, data = data3l, mean)
@@ -384,7 +389,7 @@ names(data5) <- c("Image", "Cluster",
                  "Area", "Density")
 rm(neib_image, neib_cluster, neib_area, neib_density)
 
-write.csv(data5, paste0(results_folder, "/Neighbourhood Cluster Totals.csv"), row.names = F)
+write.csv(data5, paste0(results_folder, "/Neighbourhood Cluster Totals_c", targetClusterNumber, ".csv"), row.names = F)
 
 # lock in a cell type order
 data5$Cluster <- factor(data5$Cluster, levels = 1:nClusters)
@@ -402,7 +407,7 @@ if(n_images > 50){
 }
 
 
-pdf(paste0(results_folder, "/Neighbourhood Cluster Totals Plot.pdf"))
+pdf(paste0(results_folder, "/Neighbourhood Cluster Totals Plot_c", targetClusterNumber, ".pdf"))
 
 ggp1 <- ggplot(d, aes(x = Image, y = Area, fill = Cluster)) +
         geom_bar(stat = "identity") +
