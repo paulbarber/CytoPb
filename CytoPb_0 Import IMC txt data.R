@@ -1,7 +1,7 @@
 # CytoPb: Script 0
 # P R Barber, Jan 2023
 
-# read raw data from IMC txt files, make tiff and panel.csv
+# read raw data from IMC txt files, make 16-bit tiff and panel.csv
 
 #BiocManager::install("imcRtools")
 suppressMessages(library(imcRtools))
@@ -87,9 +87,9 @@ for(i in 1:length(raw_filenames)){
   # Save the channels to keep in a tiff in the img folder
   filename <- paste0(img_folder, image_name, ".tiff")
   img_keep <- img[,,named]
-  writeImage(img_keep/65535, filename, bits.per.sample = 32)
+  writeImage(img_keep/2^16, filename, bits.per.sample = 16)
   
-  # NB these are 32bit images 0-1, Steinbock output are 32bit (unknown range).
+  # NB these are 16bit images with original scale, Steinbock output are 32bit (unknown range).
   # If they are saved without scaling, they somehow get thresholded and become binary.
   # This seems to be a problem with EBImage.
 }

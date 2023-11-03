@@ -10,6 +10,9 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   img <- image@listData[[1]][,,channel]
   img_blur <- gblur(img, sigma = sigma, boundary = 0) # to get the final intensity from
   
+  # NB for IMC data the values in img are equal to value in tiff / 2^32
+  # img_blur will have the same range
+  
   img2 <- medianFilter(normalize(img), 2)
   
   #  img3 <- img2 > otsu(img2, range = c(0, max(img2)))
@@ -34,8 +37,8 @@ estimateNegPosValue <- function(image, channel, sigma = 10){
   # calculate negative and positive image values in the original image units
   # suppressWarnings on max in case there is no foreground
   #posv <- suppressWarnings((mean(img_blur[img4==1])))                              *************************
-  posv <- suppressWarnings((quantile(img_blur[img4>0], 0.05)))    #  percentile, err on the low side
-  negv <- suppressWarnings((mean(img_blur[img4==0])))
+  posv <- suppressWarnings((quantile(img_blur[img4>0], 0.05))) * 2^16    #  percentile, err on the low side
+  negv <- suppressWarnings((mean(img_blur[img4==0]))) * 2^16
   
   # If posv comes out 0 (max returns -Inf), there was no foreground = NA
   # If posv comes out NaN (mean returns NaN), there was no foreground = NA

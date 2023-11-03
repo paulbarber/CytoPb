@@ -123,7 +123,7 @@ for(i in 1:length(img_filenames)){
     # do some checks against the global positive value
     g <- pos_table[which(pos_table$Channel == channel), "global"]
     if(is.na(g)){
-      g = 100000
+      g = 2^16
     }
     
     # Check these values, if nv is NA set to 0, if pv is NA set to global value
@@ -132,7 +132,7 @@ for(i in 1:length(img_filenames)){
       pv1 = g
     }
     if(is.na(pv1)) {   # final check
-      pv1 = 100000
+      pv1 = 2^16
     }
     
     # Check for fg>bg
@@ -141,7 +141,7 @@ for(i in 1:length(img_filenames)){
       if(pv1<nv1) {
         nv1 = 0
         if(pv1<nv1) {
-          pv1 = 100000
+          pv1 = 2^16
         }
       }
     }
@@ -151,6 +151,9 @@ for(i in 1:length(img_filenames)){
       pv1 = g
     }
     
+    # Convert the real units into image units of EBImage
+    pv1 = pv1 / 2^16
+    nv1 = nv1 / 2^16
     
     # Write a png of the channel for convenience
     # I cannot get EBImage to write a nice image out! This is the best I can do.
@@ -159,7 +162,9 @@ for(i in 1:length(img_filenames)){
     #writeImage(i_p1*256, filename)
     
     filename <- paste0(channel_png_folder_channel, image_name, "_", channel, ".png")
-    writeImage(normalize(i_p1), filename)
+#    writeImage(normalize(i_p1), filename)
+#    writeImage(i_p1 * 2^16 / 20, filename)   # max of 20 in the original units
+    writeImage(i_p1 / pv1, filename)   # max of pv1
     
     # blur to account for cell size/position uncertainties
     i_p1 <- gblur(i_p1, sigma = sigma, boundary = 0)
