@@ -119,6 +119,7 @@ for(i in 1:length(img_filenames)){
   channelNames(images) <- panel_keep$name
   
   image_name <- names(images)[1]
+  print(image_name)
   setTxtProgressBar(pb,i)
   
   for(channel in channelNames(images)){

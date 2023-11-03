@@ -15,11 +15,14 @@ plotPosValues <- function(pos_table, pos_value_plot_filename){
     rel_size = 50/n_images
   }
   
+  d$Value.log10
+  
   pdf(pos_value_plot_filename)
   print(ggplot(d, aes(Channel, Image, fill = log10(positive.value))) + 
           geom_tile() + 
+          guides(fill=guide_colourbar(title = "log10")) +
           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-                legend.position = "none",
+                legend.position = "right",
                 axis.text.y = element_text(size = rel(rel_size))))
   dev.off()
 }
@@ -56,7 +59,7 @@ plotRanges <- function(pos_table, neg_table, pos_value_plot_filename){
           scale_fill_gradientn(colours = c("red", "white", "green"), 
                                values = c(0,zero,1), limits = c(mn, mx), oob = scales::squish) + 
           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-                legend.position = "none",
+                legend.position = "right",
                 axis.text.y = element_text(size = rel(rel_size))))
   dev.off()
 }

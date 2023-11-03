@@ -269,9 +269,9 @@ print(ggplot(data3ls, aes(y = cluster, x = cell_type, fill = value)) +
 # if we use the default to scale by rows as well
 heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
         scale = "row", Colv = NA, Rowv = NA)
-#legend(x="right", legend=c("max", "med", "min"), 
-#       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
-#       border = FALSE, bty = "n")
+legend(x="right", legend=c("max", "med", "min"), 
+       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
+       border = FALSE, bty = "n")
 
 data3l <- tidyr::pivot_longer(as.data.frame(data3), !cluster, names_to = "channel", values_to = "value")
 data3la <- aggregate(value ~ cluster + channel, data = data3l, max)
@@ -296,9 +296,9 @@ print(ggplot(data3ls, aes(y = cluster, x = channel, fill = value)) +
 # if we use the default to scale by rows as well
 heatmap(as.matrix(data3ws[,2:dim(data3ws)[2]]), cexCol = 0.5, 
         scale = "row", Colv = NA, Rowv = NA)
-#legend(x="right", legend=c("max", "med", "min"), 
-#       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
-#       border = FALSE, bty = "n")
+legend(x="right", legend=c("max", "med", "min"), 
+       fill=c(hcl.colors(3, "YlOrRd", rev = FALSE)),
+       border = FALSE, bty = "n")
 
 if(min(clusters)==0){
   

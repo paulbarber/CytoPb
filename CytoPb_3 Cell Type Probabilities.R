@@ -400,8 +400,9 @@ for(i in 1:length(img_filenames)){
   
   print(ggplot(d, aes(CellType, Channel, fill = Mean)) + 
           geom_tile() + 
+          guides(fill=guide_colourbar(title = "mean")) +
           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
-                legend.position = "none") +
+                legend.position = "right") +
           ggtitle(image_name)) 
   
 }
@@ -537,8 +538,9 @@ d$CellType <- factor(d$CellType, levels=unique(d$CellType)) # keep CellType orde
 pdf(markerpercell_filename)
 print(ggplot(d, aes(CellType, Channel, fill = Mean)) + 
         geom_tile() + 
+        guides(fill=guide_colourbar(title = "mean")) +
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
-              legend.position = "none"))
+              legend.position = "right"))
 dev.off()
 
 # Save everything so far
