@@ -120,27 +120,27 @@ colnames(data) <- make.names(names(ct_matrix))
 #custom.settings$random_state=42
 
 
-cat(paste("Performing UMAP with", dim(data)[1], "regions...\n"))
-#data.umap <- umap(data, config = custom.settings, fast_sgd=T)
-data.umap <- umap(data)   # default settings
-
-
-u <- as.data.frame(data.umap$layout)
-names(u) <- c("UMAP1", "UMAP2")
-data2 <- cbind(data, u)
-
-cat("Saving UMAPs per cell type...\n")
-pb = txtProgressBar(min = 0, max = length(colnames(data)), initial = 0)
-pdf(paste0(results_folder, "/Neighbourhood Celltype umap Plots_c", targetClusterNumber, ".pdf"))
-i=1
-for(ch in colnames(data)){
-  setTxtProgressBar(pb, i)
-  print(ggplot(data2, aes(x = UMAP1, y = UMAP2)) +
-          geom_point(aes_string(colour = ch), size = 1, alpha = 0.5))
-  i = i + 1
-}
-dev.off()
-close(pb)
+##cat(paste("Performing UMAP with", dim(data)[1], "regions...\n"))
+###data.umap <- umap(data, config = custom.settings, fast_sgd=T)
+##data.umap <- umap(data)   # default settings
+##
+##
+##u <- as.data.frame(data.umap$layout)
+##names(u) <- c("UMAP1", "UMAP2")
+##data2 <- cbind(data, u)
+##
+##cat("Saving UMAPs per cell type...\n")
+##pb = txtProgressBar(min = 0, max = length(colnames(data)), initial = 0)
+##pdf(paste0(results_folder, "/Neighbourhood Celltype umap Plots_c", targetClusterNumber, ".pdf"))
+##i=1
+##for(ch in colnames(data)){
+##  setTxtProgressBar(pb, i)
+##  print(ggplot(data2, aes(x = UMAP1, y = UMAP2)) +
+##geom_point(aes_string(colour = ch), size = 1, alpha = 0.5))
+##  i = i + 1
+##}
+##dev.off()
+##close(pb)
 
 
 #cat("hdbscan clustering...\n")
@@ -212,33 +212,33 @@ data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 #cbPalette <- c("#000000", rainbow(nClusters+2))
 cbPalette <- c("black", unname(Polychrome::createPalette(nClusters,  c("#ff0000", "#00ff00", "#0000ff"))))
 
-pdf(paste0(results_folder, "/Neighbourhood Cluster umap Plot_c", targetClusterNumber, ".pdf"))
-ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
-        geom_point(aes(colour = cluster), size = 1, alpha = 0.5) +
-        scale_colour_manual(values=cbPalette[-1]) +
-        guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
-
-if(nClusters > max_colours_for_legend){
-  print(ggp1 + theme(legend.position = "none"))
-} else {
-  print(ggp1)
-}
-
-if(min(clusters)==0){
-  ggp2 <- ggplot(subset(data4, !is.na(cluster)), aes(x = UMAP1, y = UMAP2)) +
-          geom_point(aes(colour = cluster), size = 1, alpha = 0.5) +
-          scale_colour_manual(values=cbPalette[-1]) +
-          ggtitle("Noise pixels omitted") +
-          guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
-  
-  if(nClusters > max_colours_for_legend){
-    print(ggp2 + theme(legend.position = "none"))
-  } else {
-    print(ggp2)
-  }
-}
-
-dev.off()
+##pdf(paste0(results_folder, "/Neighbourhood Cluster umap Plot_c", targetClusterNumber, ".pdf"))
+##ggp1 <- ggplot(data4, aes(x = UMAP1, y = UMAP2)) +
+##        geom_point(aes(colour = cluster), size = 1, alpha = 0.5) +
+##        scale_colour_manual(values=cbPalette[-1]) +
+##        guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
+##
+##if(nClusters > max_colours_for_legend){
+##  print(ggp1 + theme(legend.position = "none"))
+##} else {
+##  print(ggp1)
+##}
+##
+##if(min(clusters)==0){
+##  ggp2 <- ggplot(subset(data4, !is.na(cluster)), aes(x = UMAP1, y = UMAP2)) +
+##          geom_point(aes(colour = cluster), size = 1, alpha = 0.5) +
+##          scale_colour_manual(values=cbPalette[-1]) +
+##          ggtitle("Noise pixels omitted") +
+##          guides(colour=guide_legend(override.aes=list(alpha=1, size=3)))
+##  
+##  if(nClusters > max_colours_for_legend){
+##    print(ggp2 + theme(legend.position = "none"))
+##  } else {
+##    print(ggp2)
+##  }
+##}
+##
+##dev.off()
 
 
 # cluster heatmap
