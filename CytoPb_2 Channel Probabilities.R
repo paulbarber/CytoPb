@@ -186,7 +186,7 @@ for(i in 1:length(img_filenames)){
     writeImage(y, filename)
     
     # Store these probability maps for later use, in order as channels_needed
-    channel_probability_maps <- combine(channel_probability_maps, i_p1)
+    channel_probability_maps <- EBImage::combine(channel_probability_maps, i_p1)
 
   }
   

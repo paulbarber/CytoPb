@@ -40,7 +40,8 @@ plotRanges <- function(pos_table, neg_table, pos_value_plot_filename){
   d <- merge(p, n)
   d$diff <- d$positive.value - d$negative.value
   d$mean <- (d$positive.value + d$negative.value) / 2
-  d$range <- d$diff / d$mean # range normalised by the mean
+#  d$range <- d$diff / d$mean # range normalised by the mean
+  d$range <- d$diff
   
   # reduce text size when number of images is large
   n_images <- dim(pos_table)[2]-3
@@ -50,7 +51,8 @@ plotRanges <- function(pos_table, neg_table, pos_value_plot_filename){
   }
   
   mn <- -0.0001 # so that anything negative shows red
-  mx <- 2       # a nice max value for normalised range
+#  mx <- 2       # a nice max value for normalised range
+  mx <- 20
   zero <- -mn/(mx-mn)
   
   pdf(pos_value_plot_filename)

@@ -247,7 +247,7 @@ for(i in 1:length(img_names)){
       
       ### AND = min
       ### combine all channels into a stack and do min outside the loop
-      os <- combine(os, i_p)
+      os <- EBImage::combine(os, i_p)
       
     }
     
@@ -259,7 +259,7 @@ for(i in 1:length(img_names)){
     addToGlobalArrays(ct_name, image_name, scores)
     
     # Store these probability maps for later use
-    celltype_probability_maps <- combine(celltype_probability_maps, os)
+    celltype_probability_maps <- EBImage::combine(celltype_probability_maps, os)
     
   }
   
@@ -289,7 +289,7 @@ for(i in 1:length(img_names)){
     
     ### OR = max
     ### combine all channels into a stack and do max outside the loop
-    os <- combine(os, i_p)
+    os <- EBImage::combine(os, i_p)
   }
   
   ## AND = multiplication
@@ -306,7 +306,7 @@ for(i in 1:length(img_names)){
   
   # DON'T Store this probability map for later use
   # Only generate stats on it
-  #celltype_probability_maps <- combine(celltype_probability_maps, os)
+  #celltype_probability_maps <- EBImage::combine(celltype_probability_maps, os)
   
   ########################################################################
   
@@ -424,12 +424,12 @@ mean_per_ct <- as.data.frame(mean_per_ct)
 # Write full table of marker per cell type
 write.csv(mean_per_ct_table, file = markerpercelltable_filename, row.names = F)
 
-data <- data.frame(image_names, ct_names, 
+cell_type_data <- data.frame(image_names, ct_names, 
                    total, density, 
                    total_highProb, density_highProb, area_highProb,
                    max_prob_area, max_prob_area_perc)
 
-names(data) <- c("Image", "CellType", 
+names(cell_type_data) <- c("Image", "CellType", 
                  "Total", "Density", 
                  "Total_highProb", "Density_highProb", "Area_highProb",
                 "Max_probability_area", "Max_probability_area_percentage")
@@ -439,15 +439,15 @@ rm(image_names, ct_names,
    total_highProb, density_highProb, area_highProb,
    max_prob_area, max_prob_area_perc)
 
-write.csv(data, file = CellTypeTotals_filename, row.names = F)
+write.csv(cell_type_data, file = CellTypeTotals_filename, row.names = F)
 
 # lock in a cell type order
-data$CellType <- factor(data$CellType, levels = names(ct_matrix))
+cell_type_data$CellType <- factor(cell_type_data$CellType, levels = names(ct_matrix))
 
 
 # Plots of cell content
 
-d <- subset(data, CellType != "Total_Tissue")
+d <- subset(cell_type_data, CellType != "Total_Tissue")
 
 # reduce text size when number of images is large
 n_images <- length(img_names)
