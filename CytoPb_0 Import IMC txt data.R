@@ -26,6 +26,7 @@ if(!dir.exists(raw_folder)){
 
 # define file names
 panel_filename <- paste0(working_folder, "/panel.csv")
+panel_names <- NULL
 
 # create output folders
 img_folder <- paste0(working_folder, "/img/")
@@ -83,6 +84,7 @@ for(i in 1:length(raw_filenames)){
   
   # keep the panel
   assign(paste0("panel", i), panel)
+  panel_names <- c(panel_names, image_name)
   
   # Save the channels to keep in a tiff in the img folder
   filename <- paste0(img_folder, image_name, ".tiff")
@@ -102,12 +104,12 @@ panel <- panel1
 write.csv(panel, panel_filename, row.names = F)
 
 # Check and save any others that are not the same
-if(length(raw) > 1){
+if(length(panel_names) > 1){
   all_the_same = TRUE
-  for(i in 2:length(raw)){
+  for(i in 2:length(panel_names)){
       p <- get(paste0("panel", i))
       if(!identical(p, panel)){
-        filename <- paste0(working_folder, "/panel_", names(raw)[i], ".csv")
+        filename <- paste0(working_folder, "/panel_", panel_names[i], ".csv")
         write.csv(p, filename, row.names = F)
         all_the_same = FALSE
       }
@@ -124,7 +126,7 @@ rm(list = ls(pattern = "panel+[0-9]"))
 # remove this large object from the environment
 rm(raw, img_keep)
 
-cat("If your image names are long, now is a good time to shorten them.")
+cat("If your image names are long, now is a good time to shorten them.\n")
 
 # Example image renaming, modify it for your needs and run shorten_image_names()
 
