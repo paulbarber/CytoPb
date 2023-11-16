@@ -151,8 +151,9 @@ if(length(img_filenames) > 1){
   #pos_table$global <- mapply(function(x, y){min(x[x>y], na.rm = T)}, x=as.data.frame(t(p)), y=t) 
   
   # OR assume all pos values are good (since fg is strict) and take the mean or something
-  pos_table$global <- rowMeans(pos_table[,3:dim(pos_table)[2]], na.rm = TRUE)
+  #pos_table$global <- rowMeans(pos_table[,3:dim(pos_table)[2]], na.rm = TRUE)
   #pos_table$global <- apply(p, 1, quantile, probs = 0.1, na.rm = TRUE)  # This was default March 2023-Sept 2023, and often caused pos<neg values.
+  pos_table$global <- apply(p, 1, quantile, probs = 0.5, na.rm = TRUE)  # Median
   
   rm(p)
   #rm(mn, mx, t)
