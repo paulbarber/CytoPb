@@ -95,6 +95,7 @@ neg_table <- pos_table
 pb = txtProgressBar(min = 0, max = length(img_filenames), initial = 0)
 for(i in 1:length(img_filenames)){
 
+  print(img_filenames[i])
   images <- loadImages(img_filenames[i])   # will be a list of one image
   
   # Check number of channels in image
@@ -119,7 +120,6 @@ for(i in 1:length(img_filenames)){
   channelNames(images) <- panel_keep$name
   
   image_name <- names(images)[1]
-  print(image_name)
   setTxtProgressBar(pb,i)
   
   for(channel in channelNames(images)){
