@@ -70,47 +70,63 @@ regions_per_image <- NULL
 region_d1_per_image <- NULL
 region_d2_per_image <- NULL
 
-cat("Collecting region data for all images...\n")
-pb = txtProgressBar(min = 0, max = length(images_to_process), initial = 0)
-for(i in 1:length(images_to_process)){
+if(exists(paste0("region_data_", grid_size))){
+  cat("Using existing region data...\n")
+  data <- get(paste0("region_data_", grid_size))
+  regions_per_image <- get(paste0("regions_per_image_", grid_size))
+  region_d1_per_image <- get(paste0("region_d1_per_image_", grid_size))
+  region_d2_per_image <- get(paste0("region_d2_per_image_", grid_size))
   
-  setTxtProgressBar(pb, i)
-  image_name <- images_to_process[i]
+} else {
+  cat("Collecting region data for all images...\n")
   
-  # Get some cell type probability data
-  image <- loadCellTypeMapObject(image_name)
-
-  # Get rid of low probabilities?
-  # <0.1
-  
-  # Different binning functions
-  # We are binning the cell type probabilities
-  # These are like area and seem to be the best
-  fun <- sum   # Account for area of each cell type and strength
-  #fun <- mean  # all regions are the same size, so should be the same as sum
-  # These are like cell presence?
-  #fun <- max   # The strongest probability in each area for each type
+  pb = txtProgressBar(min = 0, max = length(images_to_process), initial = 0)
+  for(i in 1:length(images_to_process)){
     
-  d <- binImage(image, fun, bin_size = grid_size)
-  d <- d@.Data
+    setTxtProgressBar(pb, i)
+    image_name <- images_to_process[i]
+    
+    # Get some cell type probability data
+    image <- loadCellTypeMapObject(image_name)
   
-  nRegions <- dim(d)[1]*dim(d)[2]
+    # Get rid of low probabilities?
+    # <0.1
+    
+    # Different binning functions
+    # We are binning the cell type probabilities
+    # These are like area and seem to be the best
+    fun <- sum   # Account for area of each cell type and strength
+    #fun <- mean  # all regions are the same size, so should be the same as sum
+    # These are like cell presence?
+    #fun <- max   # The strongest probability in each area for each type
+      
+    d <- binImage(image, fun, bin_size = grid_size)
+    d <- d@.Data
+    
+    nRegions <- dim(d)[1]*dim(d)[2]
+    
+    # Note how many regions for this image
+    regions_per_image <- c(regions_per_image, nRegions) 
+    region_d1_per_image <- c(region_d1_per_image, dim(d)[1])
+    region_d2_per_image <- c(region_d2_per_image, dim(d)[2])
+    
+    dim(d) <- c(nRegions, dim(d)[3])    # reshape to 2d [region,channel]
+    
+    data <- rbind(data, d)
+    rm(d)
+  }  
+  close(pb)
+  rm(image)
   
-  # Note how many regions for this image
-  regions_per_image <- c(regions_per_image, nRegions) 
-  region_d1_per_image <- c(region_d1_per_image, dim(d)[1])
-  region_d2_per_image <- c(region_d2_per_image, dim(d)[2])
+  # Copy celltype names and make sure all the names are good for the plots below
+  colnames(data) <- make.names(names(ct_matrix))
   
-  dim(d) <- c(nRegions, dim(d)[3])    # reshape to 2d [region,channel]
-  
-  data <- rbind(data, d)
-  rm(d)
-}  
-close(pb)
-rm(image)
-
-# Copy celltype names and make sure all the names are good for the plots below
-colnames(data) <- make.names(names(ct_matrix))
+  # save this data for future runs with the same grid size
+  assign(paste0("region_data_", grid_size), data)
+  assign(paste0("regions_per_image_", grid_size), regions_per_image)
+  assign(paste0("region_d1_per_image_", grid_size), region_d1_per_image)
+  assign(paste0("region_d2_per_image_", grid_size), region_d2_per_image)
+}
 
 # Set umap settings for pre-clustering, tight clusters
 #custom.settings = umap.defaults
@@ -204,7 +220,8 @@ cat("Saving plots...\n")
 
 data3 <- cbind(data, clusters)
 colnames(data3) <- c(colnames(data), "cluster")
-data4 <- cbind(data2, clusters)
+#data4 <- cbind(data2, clusters)  # with umap
+data4 <- as.data.frame(cbind(data, clusters))    # without umap
 colnames(data4)[length(colnames(data4))] <- "cluster"
 data4$cluster <- factor(data4$cluster, levels = 1:(nClusters))
 
@@ -447,8 +464,8 @@ if(nClusters > max_colours_for_legend){
 
 dev.off()
 
-
-rm(data2, data3, images_to_process)
+#rm(data2, data4)
+rm(data3, images_to_process)
 
 # Save everything so far
 save.image(file = global_data_filename)
