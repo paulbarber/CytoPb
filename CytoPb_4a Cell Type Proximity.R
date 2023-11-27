@@ -193,6 +193,8 @@ for (i in 1:length(ct_pairs)){
         range_error = 2   # already overlapped at the smallest scale
       } else if (sig$overlap[length(sig$overlap)] < 0.25) {
         range_error = 3   # not overlapped at the largest scale
+      } else if (sig$overlap[length(sig$overlap)] - sig$overlap[1] < 0.1) {
+        range_error = 4   # no significant positive change in overlap over the range
       } else {
         range_error = 0   # good
       }  
