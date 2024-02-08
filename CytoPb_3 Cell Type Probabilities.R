@@ -543,5 +543,15 @@ print(ggplot(d, aes(CellType, Channel, fill = Mean)) +
               legend.position = "right"))
 dev.off()
 
+
+# For the neighborhood regions in script 4, make sure these vars are deleted
+# so they can be created for the current cell types
+# save this data for future runs with the same grid size
+rm(list = ls(pattern = "region_data_[0-9]+"))
+rm(list = ls(pattern = "regions_per_image_[0-9]+"))
+rm(list = ls(pattern = "region_d1_per_image_[0-9]+"))
+rm(list = ls(pattern = "region_d2_per_image_[0-9]+"))
+
+
 # Save everything so far
 save.image(file = global_data_filename)
