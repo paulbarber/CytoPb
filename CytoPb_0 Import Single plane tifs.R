@@ -38,51 +38,62 @@ dir.create(img_folder, showWarnings = F)
 # get a list of the raw data folders
 folder_names <- list.dirs(raw_folder, recursive = F)
 
-panel_names <- vector()
-j = 1 
-for(i in 1:length(folder_names)){
+# If a panel file is not supplied, try to create one
+if(!file.exists(panel_filename)){
   
-  folder <- folder_names[i]
-  image_names <- list.files(path = folder, pattern = "*.tif")
+  panel_names <- vector()
+  j = 1 
+  for(i in 1:length(folder_names)){
+    
+    folder <- folder_names[i]
+    image_names <- list.files(path = folder, pattern = "*.tif")
+    
+    if(length(image_names) < 1) next    # skip empty folders
+    
+    # store all panels
+    assign(paste0("panel", j), strex::str_before_last(image_names, ".tif"))
+    j = j + 1
+    
+    # keep list of panel names
+    panel_names <- c(panel_names, strex::str_after_last(folder, "/"))
+  }
   
-  if(length(image_names) < 1) next    # skip empty folders
+  # Check panels for all file are identical
+  # assume panel1 is the one
+  # make the panel.csv table
+  channel = 1:length(panel1)
+  panel <- data.frame(channel)
+  panel$name <- panel1
+  panel$keep <- 1
+  write.csv(panel, panel_filename, row.names = F)
   
-  # store all panels
-  assign(paste0("panel", j), strex::str_before_last(image_names, ".tif"))
-  j = j + 1
-  
-  # keep list of panel names
-  panel_names <- c(panel_names, strex::str_after_last(folder, "/"))
-}
-
-# Check panels for all file are identical
-# assume panel1 is the one
-# make the panel.csv table
-channel = 1:length(panel1)
-panel <- data.frame(channel)
-panel$name <- panel1
-panel$keep <- 1
-write.csv(panel, panel_filename, row.names = F)
-
-# Check and save any others that are not the same
-if(length(panel_names) > 1){
-  all_the_same = TRUE
-  for(i in 2:length(panel_names)){
-    p <- get(paste0("panel", i))
-    if(!identical(p, panel)){
-      filename <- paste0(working_folder, "/panel_", panel_names[i], ".csv")
-      write.csv(p, filename, row.names = F)
-      all_the_same = FALSE
+  # Check and save any others that are not the same
+  if(length(panel_names) > 1){
+    all_the_same = TRUE
+    for(i in 2:length(panel_names)){
+      p <- get(paste0("panel", i))
+      if(!identical(p, panel)){
+        filename <- paste0(working_folder, "/panel_", panel_names[i], ".csv")
+        write.csv(p, filename, row.names = F)
+        all_the_same = FALSE
+      }
+    }
+    
+    if(!all_the_same){
+      warning("The raw image files do not all have the same panel.")
     }
   }
   
-  if(!all_the_same){
-    warning("The raw image files do not all have the same panel.")
-  }
+  # delete all unwanted panels
+  rm(list = ls(pattern = "panel[0-9]"))
+
+} else {
+  # load in the supplied panel file
+  panel <- read.csv(panel_filename)
 }
 
-# delete all unwanted panels
-rm(list = ls(pattern = "panel[0-9]"))
+# make a list of the channels to keep
+panel_keep_names <- panel$name[panel$keep == 1]
 
 # read in the data and save in new format
 for(i in 1:length(folder_names)){
@@ -99,11 +110,11 @@ for(i in 1:length(folder_names)){
   
   pb = txtProgressBar(min = 0, max = length(image_paths), initial = 0)
   
-  for(j in 1:length(panel$name)){
+  for(j in 1:length(panel_keep_names)){
     
     setTxtProgressBar(pb, j)
 
-    image_path <- paste0(folder, "/", panel$name[j], ".tiff")
+    image_path <- paste0(folder, "/", panel_keep_names[j], ".tiff")
     
     # Load raw images
     raw <- loadImages(image_path)
